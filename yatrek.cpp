@@ -87,6 +87,12 @@ double b_FNR(double R)
 	return (int)(b_RND(R)*7.98+1.01);
 }
 
+enum
+{
+	RGOTO_NONE = 0,
+	RGOTO_L_6240 = 1
+};
+
 void GOSUB_L_8590();
 void GOSUB_L_8670();
 void GOSUB_L_8790();
@@ -102,27 +108,18 @@ return;
 }
 
 // KLINGONS SHOOTING
-void GOSUB_L_6000() {
-if (K3<=0) {return; }
-if (D0!=0) {cout << "STARBASE SHIELDS PROTECT THE ENTERPRISE" << endl; return; }
+int GOSUB_L_6000() {
+if (K3<=0) {return 0; }
+if (D0!=0) {cout << "STARBASE SHIELDS PROTECT THE ENTERPRISE" << endl; return 0; }
 for (I=1; I <= 3; I++) {if (K[(int)(I)][(int)(3)]<=0) {goto L_6200; }
 H=(int)((K[(int)(I)][(int)(3)]/b_FND(1))*(2+b_RND(1))); S=S-H; K[(int)(I)][(int)(3)]=K[(int)(I)][(int)(3)]/(3+b_RND(0));
 cout << " " << H << " " << "UNIT HIT ON ENTERPRISE FROM SECTOR" << " " << K[(int)(I)][(int)(1)] << " " << "," << " " << K[(int)(I)][(int)(2)] << " " << endl;
-if (S<=0) {goto L_6240; }
+if (S<=0) {return RGOTO_L_6240; }
 cout << "      <SHIELDS DOWN TO" << " " << S << " " << "UNITS>" << endl; if (H<20) {goto L_6200; }
 if (b_RND(1)>0.6 || H/S<=0.02) {goto L_6200; }
 R1=b_FNR(1); D[(int)(R1)]=D[(int)(R1)]-H/S-0.5*b_RND(1); GOSUB_L_8790();
 cout << "DAMAGE CONTROL REPORTS " << s_G2 << " DAMAGED BY THE HIT'" << endl;
-L_6200: ; }; return;
-
-// FIXME: duplicated code
-L_6220: cout << "IT IS STARDATE" << " " << T << " " << endl; goto L_6270;
-L_6240: cout << endl; cout << "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION ";
-cout << "WILL BE CONQUERED" << endl; goto L_6220;
-L_6270: cout << "THERE WERE" << " " << K9 << " " << "KLINGON BATTLE CRUISERS LEFT AT" << endl;
-cout << "THE END OF YOUR MISSION." << endl;
-L_6290: cout << endl; cout << endl; // if (B9==0) {goto L_6360; }
-exit(0);
+L_6200: ; }; return 0;
 }
 
 // SHORT RANGE SENSOR SCAN & STARTUP SUBROUTINE
@@ -294,7 +291,7 @@ goto L_1990;
 L_2590: for (I=1; I <= K3; I++) {if (K[(int)(I)][(int)(3)]==0) {goto L_2700; }
 s_A="   "; Z1=K[(int)(I)][(int)(1)]; Z2=K[(int)(I)][(int)(2)]; GOSUB_L_8670(); GOSUB_L_8590();
 K[(int)(I)][(int)(1)]=Z1; K[(int)(I)][(int)(2)]=Z2; s_A="+K+"; GOSUB_L_8670();
-L_2700: ; }; GOSUB_L_6000(); D1=0; D6=W1; if (W1>=1) {D6=1; }
+L_2700: ; }; if (GOSUB_L_6000() == RGOTO_L_6240){goto L_6240;} D1=0; D6=W1; if (W1>=1) {D6=1; }
 for (I=1; I <= 8; I++) {if (D[(int)(I)]>=0) {goto L_2880; }
 D[(int)(I)]=D[(int)(I)]+D6; if (D[(int)(I)]>-0.1 && D[(int)(I)]<0) {D[(int)(I)]=-0.1; goto L_2880; }
 if (D[(int)(I)]<0) {goto L_2880; }
@@ -366,7 +363,7 @@ cout << " " << K[(int)(I)][(int)(2)] << " " << endl; if (K[(int)(I)][(int)(3)]<=
 cout << "   (SENSORS SHOW" << " " << K[(int)(I)][(int)(3)] << " " << "UNITS REMAINING)" << endl; goto L_4670;
 L_4580: K3=K3-1; K9=K9-1; Z1=K[(int)(I)][(int)(1)]; Z2=K[(int)(I)][(int)(2)]; s_A="   "; GOSUB_L_8670();
 K[(int)(I)][(int)(3)]=0; G[(int)(Q1)][(int)(Q2)]=G[(int)(Q1)][(int)(Q2)]-100; Z[(int)(Q1)][(int)(Q2)]=G[(int)(Q1)][(int)(Q2)]; if (K9<=0) {goto L_6370; }
-L_4670: ; }; GOSUB_L_6000(); goto L_1990;
+L_4670: ; }; if (GOSUB_L_6000() == RGOTO_L_6240){goto L_6240;} goto L_1990;
 // PHOTON TORPEDO CODE BEGINS HERE
 L_4700: if (P<=0) {cout << "ALL PHOTON TORPEDOES EXPENDED" << endl; goto L_1990; }
 if (D[(int)(5)]<0) {cout << "PHOTON TUBES ARE NOT OPERATIONAL" << endl; goto L_1990; }
@@ -387,7 +384,7 @@ for (I=1; I <= 3; I++) {if (X3==K[(int)(I)][(int)(1)] && Y3==K[(int)(I)][(int)(2
 ; }; I=3;
 L_5190: K[(int)(I)][(int)(3)]=0; goto L_5430;
 L_5210: s_A=" * "; Z1=X; Z2=Y; GOSUB_L_8830(); if (Z3==0) {goto L_5280; }
-cout << "STAR AT" << " " << X3 << " " << "," << " " << Y3 << " " << "ABSORBED TORPEDO ENERGY." << endl; GOSUB_L_6000(); goto L_1990;
+cout << "STAR AT" << " " << X3 << " " << "," << " " << Y3 << " " << "ABSORBED TORPEDO ENERGY." << endl; if (GOSUB_L_6000() == RGOTO_L_6240){goto L_6240;} goto L_1990;
 L_5280: s_A=">!<"; Z1=X; Z2=Y; GOSUB_L_8830(); if (Z3==0) {goto L_4760; }
 cout << "*** STARBASE DESTROYED ***" << endl; B3=B3-1; B9=B9-1;
 if (B9>0 || K9>T-T0-T9) {goto L_5400; }
@@ -397,8 +394,8 @@ goto L_6270;
 L_5400: cout << "STARFLEET COMMAND REVIEWING YOUR RECORD TO CONSIDER" << endl;
 cout << "COURT MARTIAL!" << endl; D0=0;
 L_5430: Z1=X; Z2=Y; s_A="   "; GOSUB_L_8670();
-G[(int)(Q1)][(int)(Q2)]=K3*100+B3*10+S3; Z[(int)(Q1)][(int)(Q2)]=G[(int)(Q1)][(int)(Q2)]; GOSUB_L_6000(); goto L_1990;
-L_5490: cout << "TORPEDO MISSED" << endl; GOSUB_L_6000(); goto L_1990;
+G[(int)(Q1)][(int)(Q2)]=K3*100+B3*10+S3; Z[(int)(Q1)][(int)(Q2)]=G[(int)(Q1)][(int)(Q2)]; if (GOSUB_L_6000() == RGOTO_L_6240){goto L_6240;} goto L_1990;
+L_5490: cout << "TORPEDO MISSED" << endl; if (GOSUB_L_6000() == RGOTO_L_6240){goto L_6240;} goto L_1990;
 // SHIELD CONTROL
 L_5530: if (D[(int)(7)]<0) {cout << "SHIELD CONTROL INOPERABLE" << endl; goto L_1990; }
 cout << "ENERGY AVAILABLE =" << " " << E+S << " ";cout << "NUMBER OF UNITS TO SHIELDS";cout << "? "; cin >> X; ;
