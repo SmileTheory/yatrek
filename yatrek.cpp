@@ -72,6 +72,93 @@ string b_STR(int num)
 	return to_string(num);
 }
 
+double G[9][9],C[10][3],K[4][4],aN[4],Z[9][9],D[9];
+
+double N, T, T0, T9, D0, E, E0, P, P0, S9, S, B9, K9, I, S1, S2, R, Q1, Q2, J, K3, R1, B3, K7, Z4, Z5, S3, G5, D4, Z1, Z2, R2, B4, B5, C1, W1, D1, D6, X1, X, Y, X2, Q4, Q5, S8, T8, X5, L, H1, H, X3, Y3, Z3, D3, A, H8, J0;
+string s_Z, s_X, s_X0, s_A1, s_G2, s_Q, s_A, s_O1, s_C;
+
+double b_FND(double D)
+{
+	return sqrt((K[(int)I][1]-S1)*(K[(int)I][1]-S1)+(K[(int)I][2]-S2)*(K[(int)I][2]-S2));
+}
+
+double b_FNR(double R)
+{
+	return (int)(b_RND(R)*7.98+1.01);
+}
+
+void GOSUB_L_8590();
+void GOSUB_L_8670();
+void GOSUB_L_8790();
+void GOSUB_L_8830();
+void GOSUB_L_9030();
+
+// MANEUVER ENERGY S/R **
+void GOSUB_L_3910() {
+E=E-N-10; if (E>=0) {return; }
+cout << "SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER." << endl;
+S=S+E; E=0; if (S<=0) {S=0; }
+return;
+}
+
+// KLINGONS SHOOTING
+void GOSUB_L_6000() {
+if (K3<=0) {return; }
+if (D0!=0) {cout << "STARBASE SHIELDS PROTECT THE ENTERPRISE" << endl; return; }
+for (I=1; I <= 3; I++) {if (K[(int)(I)][(int)(3)]<=0) {goto L_6200; }
+H=(int)((K[(int)(I)][(int)(3)]/b_FND(1))*(2+b_RND(1))); S=S-H; K[(int)(I)][(int)(3)]=K[(int)(I)][(int)(3)]/(3+b_RND(0));
+cout << " " << H << " " << "UNIT HIT ON ENTERPRISE FROM SECTOR" << " " << K[(int)(I)][(int)(1)] << " " << "," << " " << K[(int)(I)][(int)(2)] << " " << endl;
+if (S<=0) {goto L_6240; }
+cout << "      <SHIELDS DOWN TO" << " " << S << " " << "UNITS>" << endl; if (H<20) {goto L_6200; }
+if (b_RND(1)>0.6 || H/S<=0.02) {goto L_6200; }
+R1=b_FNR(1); D[(int)(R1)]=D[(int)(R1)]-H/S-0.5*b_RND(1); GOSUB_L_8790();
+cout << "DAMAGE CONTROL REPORTS " << s_G2 << " DAMAGED BY THE HIT'" << endl;
+L_6200: ; }; return;
+
+// FIXME: duplicated code
+L_6220: cout << "IT IS STARDATE" << " " << T << " " << endl; goto L_6270;
+L_6240: cout << endl; cout << "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION ";
+cout << "WILL BE CONQUERED" << endl; goto L_6220;
+L_6270: cout << "THERE WERE" << " " << K9 << " " << "KLINGON BATTLE CRUISERS LEFT AT" << endl;
+cout << "THE END OF YOUR MISSION." << endl;
+L_6290: cout << endl; cout << endl; // if (B9==0) {goto L_6360; }
+exit(0);
+}
+
+// SHORT RANGE SENSOR SCAN & STARTUP SUBROUTINE
+void GOSUB_L_6430() {
+for (I=S1-1; I <= S1+1; I++) {for (J=S2-1; J <= S2+1; J++) {;
+if ((int)(I+0.5)<1 || (int)(I+0.5)>8 || (int)(J+0.5)<1 || (int)(J+0.5)>8) {goto L_6540; }
+s_A=">!<"; Z1=I; Z2=J; GOSUB_L_8830(); if (Z3==1) {goto L_6580; }
+L_6540: ; }; ; }; D0=0; goto L_6650;
+L_6580: D0=1; s_C="DOCKED"; E=E0; P=P0;
+cout << "SHIELDS DROPPED FOR DOCKING PURPOSES" << endl; S=0; goto L_6720;
+L_6650: if (K3>0) {s_C="*RED*"; goto L_6720; }
+s_C="GREEN"; if (E<E0*0.1) {s_C="YELLOW"; }
+L_6720: if (D[(int)(2)]>=0) {goto L_6770; }
+cout << endl; cout << "*** SHORT RANGE SENSORS ARE OUT ***" << endl; cout << endl; return;
+L_6770: s_O1="---------------------------------"; cout << s_O1 << endl; for (I=1; I <= 8; I++) {;
+for (J=(I-1)*24+1; J <= (I-1)*24+22; J += 3) {cout << " " << b_MID(s_Q,J,3);; };
+if (I == 1) goto L_6850;
+if (I == 2) goto L_6900;
+if (I == 3) goto L_6960;
+if (I == 4) goto L_7020;
+if (I == 5) goto L_7070;
+if (I == 6) goto L_7120;
+if (I == 7) goto L_7180;
+if (I == 8) goto L_7240;
+;
+L_6850: cout << "        STARDATE          " << " " << (int)(T*10)*0.1 << " " << endl; goto L_7260;
+L_6900: cout << "        CONDITION          " << s_C << endl; goto L_7260;
+L_6960: cout << "        QUADRANT          " << " " << Q1 << " " << "," << " " << Q2 << " " << endl; goto L_7260;
+L_7020: cout << "        SECTOR            " << " " << S1 << " " << "," << " " << S2 << " " << endl; goto L_7260;
+L_7070: cout << "        PHOTON TORPEDOES  " << " " << (int)(P) << " " << endl; goto L_7260;
+L_7120: cout << "        TOTAL ENERGY      " << " " << (int)(E+S) << " " << endl; goto L_7260;
+L_7180: cout << "        SHIELDS           " << " " << (int)(S) << " " << endl; goto L_7260;
+L_7240: cout << "        KLINGONS REMAINING" << " " << (int)(K9) << " " << endl;
+L_7260: ; }; cout << s_O1 << endl; return;
+}
+
 int main(int argc, char *argv[]) {
 	raninit(&rstate, (u4)time(NULL));
 L_10: // SUPER STARTREK - MAY 16,1978 - REQUIRES 24K MEMORY
@@ -106,11 +193,10 @@ cout << "                    THE USS ENTERPRISE --- NCC-1701" << endl;
 cout << endl; cout << endl; cout << endl; cout << endl; cout << endl;
 // CLEAR 600
 s_Z="                         ";
-double G[9][9],C[10][3],K[4][4],N[4],Z[9][9],D[9];
 T=(int)(b_RND(1)*20+20)*100; T0=T; T9=25+(int)(b_RND(1)*10); D0=0; E=3000; E0=E;
 P=10; P0=P; S9=200; S=0; B9=2; K9=0; s_X=""; s_X0=" IS ";
-/* FIXME-DEF */ b_FND(D)=sqrt((K[(int)(I)][(int)(1)]-S1)/* FIXME-POWER */2+(K[(int)(I)][(int)(2)]-S2)/* FIXME-POWER */2);
-/* FIXME-DEF */ b_FNR(R)=(int)(b_RND(R)*7.98+1.01);
+// FIXME-DEF b_FND(D)=sqrt((K[(int)(I)][(int)(1)]-S1)/* FIXME-POWER */2+(K[(int)(I)][(int)(2)]-S2)/* FIXME-POWER */2);
+// FIXME-DEF b_FNR(R)=(int)(b_RND(R)*7.98+1.01);
 // INITIALIZE ENTERPRIZE'S POSITION
 Q1=b_FNR(1); Q2=b_FNR(1); S1=b_FNR(1); S2=b_FNR(1);
 for (I=1; I <= 9; I++) {C[(int)(I)][(int)(1)]=0; C[(int)(I)][(int)(2)]=0; ; };
@@ -251,21 +337,15 @@ cout << "  AT SECTOR" << " " << S1 << " " << "," << " " << S2 << " " << "OF QUAD
 if (T>T0+T9) {goto L_6220; }
 L_3860: if (8*Q1+Q2==8*Q4+Q5) {goto L_3370; }
 T=T+1; GOSUB_L_3910(); goto L_1320;
-// MANEUVER ENERGY S/R **
-}
-void GOSUB_L_3910() {
-E=E-N-10; if (E>=0) {return; }
-cout << "SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER." << endl;
-S=S+E; E=0; if (S<=0) {S=0; }
-return;
+
 // LONG RANGE SENSOR SCAN CODE
 L_4000: if (D[(int)(3)]<0) {cout << "LONG RANGE SENSORS ARE INOPERABLE" << endl; goto L_1990; }
 cout << "LONG RANGE SCAN FOR QUADRANT" << " " << Q1 << " " << "," << " " << Q2 << " " << endl;
 s_O1="-------------------"; cout << s_O1 << endl;
-for (I=Q1-1; I <= Q1+1; I++) {N[(int)(1)]=-1; N[(int)(2)]=-2; N[(int)(3)]=-3; for (J=Q2-1; J <= Q2+1; J++) {;
-if (I>0 && I<9 && J>0 && J<9) {N[(int)(J-Q2+2)]=G[(int)(I)][(int)(J)]; Z[(int)(I)][(int)(J)]=G[(int)(I)][(int)(J)]; }
-; }; for (L=1; L <= 3; L++) {cout << ": ";if (N[(int)(L)]<0) {cout << "*** ";goto L_4230; }
-cout << b_RIGHT(b_STR(N[(int)(L)]+1000),3) << " ";
+for (I=Q1-1; I <= Q1+1; I++) {aN[(int)(1)]=-1; aN[(int)(2)]=-2; aN[(int)(3)]=-3; for (J=Q2-1; J <= Q2+1; J++) {;
+if (I>0 && I<9 && J>0 && J<9) {aN[(int)(J-Q2+2)]=G[(int)(I)][(int)(J)]; Z[(int)(I)][(int)(J)]=G[(int)(I)][(int)(J)]; }
+; }; for (L=1; L <= 3; L++) {cout << ": ";if (aN[(int)(L)]<0) {cout << "*** ";goto L_4230; }
+cout << b_RIGHT(b_STR(aN[(int)(L)]+1000),3) << " ";
 L_4230: ; }; cout << ":" << endl; cout << s_O1 << endl; ; }; goto L_1990;
 // PHASER CONTROL CODE BEGINS HERE
 L_4260: if (D[(int)(4)]<0) {cout << "PHASERS INOPERATIVE" << endl; goto L_1990; }
@@ -344,20 +424,7 @@ L_5910: cout << endl; cout << "DEVICE             STATE OF REPAIR" << endl; for 
 GOSUB_L_8790(); cout << s_G2 << b_LEFT(s_Z,25-b_LEN(s_G2)) << " " << (int)(D[(int)(R1)]*100)*0.01 << " " << endl;
 ; }; cout << endl; if (D0!=0) {goto L_5720; }
 goto L_1990;
-// KLINGONS SHOOTING
-}
-void GOSUB_L_6000() {
-if (K3<=0) {return; }
-if (D0!=0) {cout << "STARBASE SHIELDS PROTECT THE ENTERPRISE" << endl; return; }
-for (I=1; I <= 3; I++) {if (K[(int)(I)][(int)(3)]<=0) {goto L_6200; }
-H=(int)((K[(int)(I)][(int)(3)]/b_FND(1))*(2+b_RND(1))); S=S-H; K[(int)(I)][(int)(3)]=K[(int)(I)][(int)(3)]/(3+b_RND(0));
-cout << " " << H << " " << "UNIT HIT ON ENTERPRISE FROM SECTOR" << " " << K[(int)(I)][(int)(1)] << " " << "," << " " << K[(int)(I)][(int)(2)] << " " << endl;
-if (S<=0) {goto L_6240; }
-cout << "      <SHIELDS DOWN TO" << " " << S << " " << "UNITS>" << endl; if (H<20) {goto L_6200; }
-if (b_RND(1)>0.6 || H/S<=0.02) {goto L_6200; }
-R1=b_FNR(1); D[(int)(R1)]=D[(int)(R1)]-H/S-0.5*b_RND(1); GOSUB_L_8790();
-cout << "DAMAGE CONTROL REPORTS " << s_G2 << " DAMAGED BY THE HIT'" << endl;
-L_6200: ; }; return;
+
 // END OF GAME
 L_6220: cout << "IT IS STARDATE" << " " << T << " " << endl; goto L_6270;
 L_6240: cout << endl; cout << "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION ";
@@ -371,49 +438,17 @@ cout << "LET HIM STEP FORWARD AND ENTER 'AYE'";cout << "? "; cin >> s_A; ; if (s
 L_6360: exit(0);
 L_6370: cout << "CONGRULATION, CAPTAIN!  THEN LAST KLINGON BATTLE CRUISER" << endl;
 cout << "MENACING THE FDERATION HAS BEEN DESTROYED." << endl; cout << endl;
-cout << "YOUR EFFICIENCY RATING IS" << " " << 1000*(K7/(T-T0))/* FIXME-POWER */2 << " " << endl; goto L_6290;
-// SHORT RANGE SENSOR SCAN & STARTUP SUBROUTINE
-}
-void GOSUB_L_6430() {
-for (I=S1-1; I <= S1+1; I++) {for (J=S2-1; J <= S2+1; J++) {;
-if ((int)(I+0.5)<1 || (int)(I+0.5)>8 || (int)(J+0.5)<1 || (int)(J+0.5)>8) {goto L_6540; }
-s_A=">!<"; Z1=I; Z2=J; GOSUB_L_8830(); if (Z3==1) {goto L_6580; }
-L_6540: ; }; ; }; D0=0; goto L_6650;
-L_6580: D0=1; s_C="DOCKED"; E=E0; P=P0;
-cout << "SHIELDS DROPPED FOR DOCKING PURPOSES" << endl; S=0; goto L_6720;
-L_6650: if (K3>0) {s_C="*RED*"; goto L_6720; }
-s_C="GREEN"; if (E<E0*0.1) {s_C="YELLOW"; }
-L_6720: if (D[(int)(2)]>=0) {goto L_6770; }
-cout << endl; cout << "*** SHORT RANGE SENSORS ARE OUT ***" << endl; cout << endl; return;
-L_6770: s_O1="---------------------------------"; cout << s_O1 << endl; for (I=1; I <= 8; I++) {;
-for (J=(I-1)*24+1; J <= (I-1)*24+22; J += 3) {cout << " " << b_MID(s_Q,J,3);; };
-if (I == 1) goto L_6850;
-if (I == 2) goto L_6900;
-if (I == 3) goto L_6960;
-if (I == 4) goto L_7020;
-if (I == 5) goto L_7070;
-if (I == 6) goto L_7120;
-if (I == 7) goto L_7180;
-if (I == 8) goto L_7240;
-;
-L_6850: cout << "        STARDATE          " << " " << (int)(T*10)*0.1 << " " << endl; goto L_7260;
-L_6900: cout << "        CONDITION          " << s_C << endl; goto L_7260;
-L_6960: cout << "        QUADRANT          " << " " << Q1 << " " << "," << " " << Q2 << " " << endl; goto L_7260;
-L_7020: cout << "        SECTOR            " << " " << S1 << " " << "," << " " << S2 << " " << endl; goto L_7260;
-L_7070: cout << "        PHOTON TORPEDOES  " << " " << (int)(P) << " " << endl; goto L_7260;
-L_7120: cout << "        TOTAL ENERGY      " << " " << (int)(E+S) << " " << endl; goto L_7260;
-L_7180: cout << "        SHIELDS           " << " " << (int)(S) << " " << endl; goto L_7260;
-L_7240: cout << "        KLINGONS REMAINING" << " " << (int)(K9) << " " << endl;
-L_7260: ; }; cout << s_O1 << endl; return;
+cout << "YOUR EFFICIENCY RATING IS" << " " << 1000*(K7/(T-T0))*(K7/(T-T0)) << " " << endl; goto L_6290;
+
 // LIBRARY COMPUTER CODE
 L_7290: if (D[(int)(8)]<0) {cout << "COMPUTER DISABLED" << endl; goto L_1990; }
 L_7320: cout << "COMPUTER ACTIVE AND AWAITING COMMAND";cout << "? "; cin >> A; ; if (A<0) {goto L_1990; }
-cout << endl; H8=1; +1if (A == 1) goto L_7540;
-if (A == 2) goto L_7900;
-if (A == 3) goto L_8070;
-if (A == 4) goto L_8500;
-if (A == 5) goto L_8150;
-if (A == 6) goto L_7400;
+cout << endl; H8=1; if (A+1 == 1) goto L_7540;
+if (A+1 == 2) goto L_7900;
+if (A+1 == 3) goto L_8070;
+if (A+1 == 4) goto L_8500;
+if (A+1 == 5) goto L_8150;
+if (A+1 == 6) goto L_7400;
 ;
 cout << "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:" << endl;
 cout << "   0 = CUMULATIVE GALACTIC RECORD" << endl;
@@ -473,26 +508,32 @@ L_8410: C1=7;
 L_8420: if (abs(A)>=abs(X)) {goto L_8450; }
 cout << "DIRECTION =" << " " << C1+(((abs(X)-abs(A))+abs(X))/abs(X)) << " " << endl; goto L_8460;
 L_8450: cout << "DIRECTION =" << " " << C1+(abs(X)/abs(A)) << " " << endl;
-L_8460: cout << "DISTANCE =" << " " << sqrt(X/* FIXME-POWER */2+A/* FIXME-POWER */2) << " " << endl; if (H8==1) {goto L_1990; }
+L_8460: cout << "DISTANCE =" << " " << sqrt(X*X+A*A) << " " << endl; if (H8==1) {goto L_1990; }
 L_8480: ; }; goto L_1990;
 L_8500: if (B3!=0) {cout << "FROM ENTERPRISE TO STARBASE:" << endl; W1=B4; X=B5; goto L_8120; }
 cout << "MR. SPOCK REPORTS,  'SENSORS SHOW NO STARBASES IN THIS";
 cout << " QUADRANT.'" << endl; goto L_1990;
-// FIND EMPTY PLACE IN QUADRANT (FOR THINGS)
 }
+
+
+// FIND EMPTY PLACE IN QUADRANT (FOR THINGS)
 void GOSUB_L_8590() {
 L_8590: R1=b_FNR(1); R2=b_FNR(1); s_A="   "; Z1=R1; Z2=R2; GOSUB_L_8830(); if (Z3==0) {goto L_8590; }
 return;
-// INSERT IN STRING ARRAY FOR QUADRANT
 }
+
+
+// INSERT IN STRING ARRAY FOR QUADRANT
 void GOSUB_L_8670() {
 S8=(int)(Z2-0.5)*3+(int)(Z1-0.5)*24+1;
 if (b_LEN(s_A)!=3) {cout << "ERROR" << endl; exit(0); }
 if (S8==1) {s_Q=s_A+b_RIGHT(s_Q,189); return; }
 if (S8==190) {s_Q=b_LEFT(s_Q,189)+s_A; return; }
 s_Q=b_LEFT(s_Q,S8-1)+s_A+b_RIGHT(s_Q,190-S8); return;
-// PRINTS DEVICE NAME
 }
+
+
+// PRINTS DEVICE NAME
 void GOSUB_L_8790() {
 if (R1 == 1) goto L_8792;
 if (R1 == 2) goto L_8794;
@@ -511,15 +552,19 @@ L_8800: s_G2="PHOTON TUBES"; return;
 L_8802: s_G2="DAMAGE CONTROL"; return;
 L_8804: s_G2="SHIELD CONTROL"; return;
 L_8806: s_G2="LIBRARY-COMPUTER"; return;
-// STRING COMPARISON IN QUADRANT ARRAY
 }
+
+
+// STRING COMPARISON IN QUADRANT ARRAY
 void GOSUB_L_8830() {
 Z1=(int)(Z1+0.5); Z2=(int)(Z2+0.5); S8=(Z2-1)*3+(Z1-1)*24+1; Z3=0;
 if (b_MID(s_Q,S8,3)!=s_A) {return; }
 Z3=1; return;
+}
+
+
 // QUADRANT NAME IN G2$ FROM Z4,Z5 (=Q1,Q2)
 // CALL WITH G5=1 TO GET REGION NAME ONLY
-}
 void GOSUB_L_9030() {
 if (Z5<=4) {if (Z4 == 1) goto L_9040;
 if (Z4 == 2) goto L_9050;
@@ -571,5 +616,3 @@ L_9240: s_G2=s_G2+" II"; return;
 L_9250: s_G2=s_G2+" III"; return;
 L_9260: s_G2=s_G2+" IV"; return;
 }
-double G, C, K, N, Z, D, T, T0, T9, D0, E, E0, P, P0, S9, S, B9, K9, I, S1, S2, R, Q1, Q2, J, K3, R1, B3, K7, Z4, Z5, S3, G5, D4, Z1, Z2, R2, B4, B5, C1, W1, D1, D6, X1, X, Y, X2, Q4, Q5, S8, T8, X5, L, H1, H, X3, Y3, Z3, D3, A, H8, J0;
-string s_Z, s_X, s_X0, s_A1, s_G2, s_Q, s_A, s_O1, s_C;
