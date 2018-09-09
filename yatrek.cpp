@@ -222,7 +222,7 @@ L_10:
 // CLEAR 600
 	s_Z = "                         ";
 	T = (int)(b_RND(1) * 20 + 20) * 100; T0 = T; T9 = 25 + (int)(b_RND(1) * 10); D0 = 0; E = 3000; E0 = E;
-	P = 10; P0 = P; S9 = 200; S = 0; B9 = 2; K9 = 0; s_X = ""; s_X0 = " IS ";
+	P = 10; P0 = P; S9 = 200; S = 0; B9 = 0; K9 = 0; s_X = ""; s_X0 = " IS ";
 // FIXME-DEF b_FND(D)=sqrt((K[(int)(I)][1]-S1)/* FIXME-POWER */2+(K[(int)(I)][2]-S2)/* FIXME-POWER */2);
 // FIXME-DEF b_FNR(R)=(int)(b_RND(R)*7.98+1.01);
 // INITIALIZE ENTERPRIZE'S POSITION
