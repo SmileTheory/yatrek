@@ -555,12 +555,13 @@ L_6200:
 // END OF GAME
 void GOSUB_L_6220(int ret)
 {
-	if (ret == RGOTO_L_6220)
-		goto L_6220;
-	else if (ret == RGOTO_L_6240)
+	if (ret == RGOTO_L_6240)
 		goto L_6240;
 	else if (ret == RGOTO_L_6270)
 		goto L_6270;
+	else if (ret == RGOTO_L_6370)
+		goto L_6370;
+
 L_6220:
 	cout << "IT IS STARDATE " << T << "\n"; goto L_6270;
 L_6240:
