@@ -110,6 +110,7 @@ int GOSUB_L_4700();
 int GOSUB_L_5530();
 int GOSUB_L_5690();
 int GOSUB_L_6000();
+void GOSUB_L_6220(int ret);
 void GOSUB_L_6430();
 int GOSUB_L_7290();
 void GOSUB_L_8590();
@@ -253,7 +254,7 @@ L_1990:
 	cout << "\n"; cout << "** FATAL ERROR **   YOU'VE JUST STRANDED YOUR SHIP IN \n";
 	cout << "SPACE\n"; cout << "YOU HAVE INSUFFICIENT MANEUVERING ENERGY,";
 	cout << " AND SHIELD CONTROL\n"; cout << "IS PRESENTLY INCAPABLE OF CROSS";
-	cout << "-CIRCUITING TO ENGINE ROOM!!\n"; goto L_6220;
+	cout << "-CIRCUITING TO ENGINE ROOM!!\n"; GOSUB_L_6220(RGOTO_L_6220); goto L_10;
 L_2060:
 	cout << "COMMAND"; cout << "? "; cin >> s_A;;
 	ret = 0;
@@ -279,12 +280,11 @@ L_2160:
 		goto L_1980;
 	else if (ret == RGOTO_L_1990)
 		goto L_1990;
-	else if (ret == RGOTO_L_6220)
-		goto L_6220;
-	else if (ret == RGOTO_L_6240)
-		goto L_6240;
-	else if (ret == RGOTO_L_6270)
-		goto L_6270;
+	else if (ret != 0)
+	{
+		GOSUB_L_6220(ret);
+		goto L_10;
+	}
 
 	cout << "ENTER ONE OF THE FOLLOWING:\n";
 	cout << "  NAV  (TO SET COURSE)\n";
@@ -296,25 +296,6 @@ L_2160:
 	cout << "  DAM  (FOR DAMAGE CONTROL REPORTS)\n";
 	cout << "  COM  (TO CALL ON LIBRARY-COMPUTER)\n";
 	cout << "  XXX  (TO RESIGN YOUR COMMAND)\n\n"; goto L_1990;
-
-// END OF GAME
-L_6220:
-	cout << "IT IS STARDATE " << T << "\n"; goto L_6270;
-L_6240:
-	cout << "\n"; cout << "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION ";
-	cout << "WILL BE CONQUERED\n"; goto L_6220;
-L_6270:
-	cout << "THERE WERE " << K9 << " KLINGON BATTLE CRUISERS LEFT AT\n";
-	cout << "THE END OF YOUR MISSION.\n";
-L_6290:
-	cout << "\n\n"; if (B9 == 0) goto L_6360; cout << "THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER\n";
-	cout << "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,\n";
-	cout << "LET HIM STEP FORWARD AND ENTER 'AYE'"; cout << "? "; cin >> s_A;; if (s_A == "AYE") goto L_10; L_6360:
-	exit(0);
-L_6370:
-	cout << "CONGRULATION, CAPTAIN!  THEN LAST KLINGON BATTLE CRUISER\n";
-	cout << "MENACING THE FDERATION HAS BEEN DESTROYED.\n\n";
-	cout << "YOUR EFFICIENCY RATING IS " << 1000 * (K7 / (T - T0)) * (K7 / (T - T0)) << "\n"; goto L_6290;
 }
 
 // COURSE CONTROL BEGINS HERE
@@ -569,6 +550,35 @@ L_6200:
 		;
 	}
 	; return 0;
+}
+
+// END OF GAME
+void GOSUB_L_6220(int ret)
+{
+	if (ret == RGOTO_L_6220)
+		goto L_6220;
+	else if (ret == RGOTO_L_6240)
+		goto L_6240;
+	else if (ret == RGOTO_L_6270)
+		goto L_6270;
+L_6220:
+	cout << "IT IS STARDATE " << T << "\n"; goto L_6270;
+L_6240:
+	cout << "\n"; cout << "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION ";
+	cout << "WILL BE CONQUERED\n"; goto L_6220;
+L_6270:
+	cout << "THERE WERE " << K9 << " KLINGON BATTLE CRUISERS LEFT AT\n";
+	cout << "THE END OF YOUR MISSION.\n";
+L_6290:
+	cout << "\n\n"; if (B9 == 0) goto L_6360; cout << "THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER\n";
+	cout << "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,\n";
+	cout << "LET HIM STEP FORWARD AND ENTER 'AYE'"; cout << "? "; cin >> s_A;; if (s_A == "AYE") return;
+L_6360:
+	exit(0);
+L_6370:
+	cout << "CONGRULATION, CAPTAIN!  THEN LAST KLINGON BATTLE CRUISER\n";
+	cout << "MENACING THE FDERATION HAS BEEN DESTROYED.\n\n";
+	cout << "YOUR EFFICIENCY RATING IS " << 1000 * (K7 / (T - T0)) * (K7 / (T - T0)) << "\n"; goto L_6290;
 }
 
 // SHORT RANGE SENSOR SCAN & STARTUP SUBROUTINE
