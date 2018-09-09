@@ -103,100 +103,20 @@ enum {
 };
 
 int GOSUB_L_2300();
+void GOSUB_L_3910();
 int GOSUB_L_4000();
 int GOSUB_L_4260();
 int GOSUB_L_4700();
 int GOSUB_L_5530();
 int GOSUB_L_5690();
+int GOSUB_L_6000();
+void GOSUB_L_6430();
 int GOSUB_L_7290();
 void GOSUB_L_8590();
 void GOSUB_L_8670();
 void GOSUB_L_8790();
 void GOSUB_L_8830();
 void GOSUB_L_9030();
-
-// MANEUVER ENERGY S/R **
-void GOSUB_L_3910()
-{
-	E = E - N - 10; if (E >= 0) return; cout << "SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER.\n";
-	S = S + E; E = 0; if (S <= 0) S = 0; return;
-}
-
-// KLINGONS SHOOTING
-int GOSUB_L_6000()
-{
-	if (K3 <= 0) return 0; if (D0 != 0) {
-		cout << "STARBASE SHIELDS PROTECT THE ENTERPRISE\n"; return 0;
-	}
-	for (I = 1; I <= 3; I++) {
-		if (K[(int)(I)][3] <= 0) goto L_6200; H = (int)((K[(int)(I)][3] / b_FND(1)) * (2 + b_RND(1))); S = S - H; K[(int)(I)][3] = K[(int)(I)][3] / (3 + b_RND(0));
-		cout << " " << H << " UNIT HIT ON ENTERPRISE FROM SECTOR " << K[(int)(I)][1] << " , " << K[(int)(I)][2] << "\n";
-		if (S <= 0) return RGOTO_L_6240; cout << "      <SHIELDS DOWN TO " << S << " UNITS>\n"; if (H < 20) goto L_6200; if (b_RND(1) > 0.6 || H / S <= 0.02) goto L_6200; R1 = b_FNR(1); D[(int)(R1)] = D[(int)(R1)] - H / S - 0.5 * b_RND(1); GOSUB_L_8790();
-		cout << "DAMAGE CONTROL REPORTS " << s_G2 << " DAMAGED BY THE HIT'\n";
-L_6200:
-		;
-	}
-	; return 0;
-}
-
-// SHORT RANGE SENSOR SCAN & STARTUP SUBROUTINE
-void GOSUB_L_6430()
-{
-	for (I = S1 - 1; I <= S1 + 1; I++) {
-		for (J = S2 - 1; J <= S2 + 1; J++) {
-			;
-			if ((int)(I + 0.5) < 1 || (int)(I + 0.5) > 8 || (int)(J + 0.5) < 1 || (int)(J + 0.5) > 8) goto L_6540; s_A = ">!<"; Z1 = I; Z2 = J; GOSUB_L_8830(); if (Z3 == 1) goto L_6580; L_6540:
-			;
-		}
-		;;
-	}
-	; D0 = 0; goto L_6650;
-L_6580:
-	D0 = 1; s_C = "DOCKED"; E = E0; P = P0;
-	cout << "SHIELDS DROPPED FOR DOCKING PURPOSES\n"; S = 0; goto L_6720;
-L_6650:
-	if (K3 > 0) {
-		s_C = "*RED*"; goto L_6720;
-	}
-	s_C = "GREEN"; if (E < E0 * 0.1) s_C = "YELLOW"; L_6720:
-	if (D[2] >= 0) goto L_6770; cout << "\n"; cout << "*** SHORT RANGE SENSORS ARE OUT ***\n\n"; return;
-L_6770:
-	s_O1 = "---------------------------------"; cout << s_O1 << "\n"; for (I = 1; I <= 8; I++) {
-		;
-		for (J = (I - 1) * 24 + 1; J <= (I - 1) * 24 + 22; J += 3) {
-			cout << " " << b_MID(s_Q, J, 3);;
-		}
-		;
-		if (I == 1) goto L_6850;
-		if (I == 2) goto L_6900;
-		if (I == 3) goto L_6960;
-		if (I == 4) goto L_7020;
-		if (I == 5) goto L_7070;
-		if (I == 6) goto L_7120;
-		if (I == 7) goto L_7180;
-		if (I == 8) goto L_7240;
-		;
-L_6850:
-		cout << "        STARDATE           " << (int)(T * 10) * 0.1 << "\n"; goto L_7260;
-L_6900:
-		cout << "        CONDITION          " << s_C << "\n"; goto L_7260;
-L_6960:
-		cout << "        QUADRANT           " << Q1 << " , " << Q2 << "\n"; goto L_7260;
-L_7020:
-		cout << "        SECTOR             " << S1 << " , " << S2 << "\n"; goto L_7260;
-L_7070:
-		cout << "        PHOTON TORPEDOES   " << (int)(P) << "\n"; goto L_7260;
-L_7120:
-		cout << "        TOTAL ENERGY       " << (int)(E + S) << "\n"; goto L_7260;
-L_7180:
-		cout << "        SHIELDS            " << (int)(S) << "\n"; goto L_7260;
-L_7240:
-		cout << "        KLINGONS REMAINING " << (int)(K9) << "\n";
-L_7260:
-		;
-	}
-	; cout << s_O1 << "\n"; return;
-}
 
 int main(int argc, char *argv[])
 {
@@ -482,6 +402,13 @@ L_3500:
 	if (8 * Q1 + Q2 == 8 * Q4 + Q5) goto L_3370; T = T + 1; GOSUB_L_3910(); return RGOTO_L_1320;
 }
 
+// MANEUVER ENERGY S/R **
+void GOSUB_L_3910()
+{
+	E = E - N - 10; if (E >= 0) return; cout << "SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER.\n";
+	S = S + E; E = 0; if (S <= 0) S = 0; return;
+}
+
 // LONG RANGE SENSOR SCAN CODE
 int GOSUB_L_4000()
 {
@@ -625,6 +552,82 @@ L_5910:
 		;
 	}
 	; cout << "\n"; if (D0 != 0) goto L_5720; return RGOTO_L_1990;
+}
+
+// KLINGONS SHOOTING
+int GOSUB_L_6000()
+{
+	if (K3 <= 0) return 0; if (D0 != 0) {
+		cout << "STARBASE SHIELDS PROTECT THE ENTERPRISE\n"; return 0;
+	}
+	for (I = 1; I <= 3; I++) {
+		if (K[(int)(I)][3] <= 0) goto L_6200; H = (int)((K[(int)(I)][3] / b_FND(1)) * (2 + b_RND(1))); S = S - H; K[(int)(I)][3] = K[(int)(I)][3] / (3 + b_RND(0));
+		cout << " " << H << " UNIT HIT ON ENTERPRISE FROM SECTOR " << K[(int)(I)][1] << " , " << K[(int)(I)][2] << "\n";
+		if (S <= 0) return RGOTO_L_6240; cout << "      <SHIELDS DOWN TO " << S << " UNITS>\n"; if (H < 20) goto L_6200; if (b_RND(1) > 0.6 || H / S <= 0.02) goto L_6200; R1 = b_FNR(1); D[(int)(R1)] = D[(int)(R1)] - H / S - 0.5 * b_RND(1); GOSUB_L_8790();
+		cout << "DAMAGE CONTROL REPORTS " << s_G2 << " DAMAGED BY THE HIT'\n";
+L_6200:
+		;
+	}
+	; return 0;
+}
+
+// SHORT RANGE SENSOR SCAN & STARTUP SUBROUTINE
+void GOSUB_L_6430()
+{
+	for (I = S1 - 1; I <= S1 + 1; I++) {
+		for (J = S2 - 1; J <= S2 + 1; J++) {
+			;
+			if ((int)(I + 0.5) < 1 || (int)(I + 0.5) > 8 || (int)(J + 0.5) < 1 || (int)(J + 0.5) > 8) goto L_6540; s_A = ">!<"; Z1 = I; Z2 = J; GOSUB_L_8830(); if (Z3 == 1) goto L_6580; L_6540:
+			;
+		}
+		;;
+	}
+	; D0 = 0; goto L_6650;
+L_6580:
+	D0 = 1; s_C = "DOCKED"; E = E0; P = P0;
+	cout << "SHIELDS DROPPED FOR DOCKING PURPOSES\n"; S = 0; goto L_6720;
+L_6650:
+	if (K3 > 0) {
+		s_C = "*RED*"; goto L_6720;
+	}
+	s_C = "GREEN"; if (E < E0 * 0.1) s_C = "YELLOW"; L_6720:
+	if (D[2] >= 0) goto L_6770; cout << "\n"; cout << "*** SHORT RANGE SENSORS ARE OUT ***\n\n"; return;
+L_6770:
+	s_O1 = "---------------------------------"; cout << s_O1 << "\n"; for (I = 1; I <= 8; I++) {
+		;
+		for (J = (I - 1) * 24 + 1; J <= (I - 1) * 24 + 22; J += 3) {
+			cout << " " << b_MID(s_Q, J, 3);;
+		}
+		;
+		if (I == 1) goto L_6850;
+		if (I == 2) goto L_6900;
+		if (I == 3) goto L_6960;
+		if (I == 4) goto L_7020;
+		if (I == 5) goto L_7070;
+		if (I == 6) goto L_7120;
+		if (I == 7) goto L_7180;
+		if (I == 8) goto L_7240;
+		;
+L_6850:
+		cout << "        STARDATE           " << (int)(T * 10) * 0.1 << "\n"; goto L_7260;
+L_6900:
+		cout << "        CONDITION          " << s_C << "\n"; goto L_7260;
+L_6960:
+		cout << "        QUADRANT           " << Q1 << " , " << Q2 << "\n"; goto L_7260;
+L_7020:
+		cout << "        SECTOR             " << S1 << " , " << S2 << "\n"; goto L_7260;
+L_7070:
+		cout << "        PHOTON TORPEDOES   " << (int)(P) << "\n"; goto L_7260;
+L_7120:
+		cout << "        TOTAL ENERGY       " << (int)(E + S) << "\n"; goto L_7260;
+L_7180:
+		cout << "        SHIELDS            " << (int)(S) << "\n"; goto L_7260;
+L_7240:
+		cout << "        KLINGONS REMAINING " << (int)(K9) << "\n";
+L_7260:
+		;
+	}
+	; cout << s_O1 << "\n"; return;
 }
 
 // LIBRARY COMPUTER CODE
