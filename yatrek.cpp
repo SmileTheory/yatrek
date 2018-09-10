@@ -76,79 +76,121 @@ string b_STR(int num)
 	return to_string(num);
 }
 
-double G[9][9],  // galaxy info: 100 * klingons + 10 * starbases + stars
+/*
+ * int variables notes:
+ *
+ * E can be non-int, because there is no check for firing phasers at non-int
+ * strength.
+ *
+ * (If energy transfer from shields to warp drive is enabled)
+ * S can go non-int because E can be non-int and insufficient to perform a
+ * maneuver, and then added to S.
+ *
+ * S1, S2 are mostly int, but can go non-int temporarily during navigation.
+ *
+ * S9, E0 are technically always int, but are basically constants so have
+ * been left as double for flexibility.
+ *
+ * Z1, Z2 are usually int, but can go non-int during torpedo tracking.
+ *
+ * R2 is always int, but R1 can be non-int and they are commonly used
+ * together.
+ */
+
+int    G[9][9],  // galaxy info: 100 * klingons + 10 * starbases + stars
        C[10][3], // course calc constants
        K[4][4],  // klingon info: [1] = x [2] = y [3] = power
        aN[4],    // long range scan info, same format as G[][]
-       Z[9][9],  // known galaxy info, same format as G[]
-       D[9];     // devices state of repair, < 0 -> damaged
+       Z[9][9];  // known galaxy info, same format as G[][]
 
-double N,  // energy cost/distance for navigation
-       T,  // current stardate
+double D[9];     // devices state of repair, < 0 -> damaged
+
+double T,  // current stardate
        T0, // initial stardate
        T9, // remaining stardates
-       D0, // docked flag
+
        E,  // current energy
        E0, // max energy
-       P,  // current # of torpedoes
-       P0, // max # of torpedoes
-       S9, // average klingon energy
        S,  // shield strength
-       B9, // current # of starbases in galaxy
-       K9, // current # of klingons in galaxy
-       I,  // loop variable
        S1, // enterprise X sector
        S2, // enterprise Y sector
-       Q1, // enterprise X quadrant
-       Q2, // enterprise Y quadrant
-       J,  // loop variable 2
-       K3, // # of klingons in quadrant
+
+       S9, // average klingon energy
+
        R1, // random sector(): X result
            // galaxy gen: random number
            // damage control: device number
            // klingons shooting: device number
            // repair: device number
-       B3, // # of starbases in quadrant
-       K7, // starting # of klingons in galaxy
-       Z4, // quadrant name(): X parameter
-       Z5, // quadrant name(): Y parameter
-       S3, // # of stars in quadrant
-       G5, // quadrant name (): flag - region name only
-       D4, // random extra starbase repair time
-       Z1, // set/get sector(): X parameter
-       Z2, // set/get sector(): Y parameter
        R2, // random sector(): Y result
-       B4, // starbase X sector
-       B5, // starbase Y sector
+
+       D3, // estimated starbase repair time
+       D4, // random extra starbase repair time
+
        C1, // warp/torpedo course
            // direction/distance calculator: initial X coord
+       A,  // direction/distance calculator: initial Y coord
        W1, // warp factor
            // direction/distance calculator: final X coord
-       D1, // flag - damage control report started
-       D6, // damage repair amount
-       X1, // course X delta
        X,  // enterprise X sector before moving
            // later absolute X coord in galaxy when leaving quadrant
+	   // phaser control(): energy to fire
            // direction/distance calculator: final Y coord
        Y,  // enterprise Y sector before moving
            // later absolute Y coord in galaxy when leaving quadrant
+       X1, // course X delta
        X2, // course Y delta
+       T8, // time for warp travel
+       D6, // damage repair amount when moving
+
+       Z1, // set/get sector(): X parameter
+       Z2; // set/get sector(): Y parameter
+
+
+int    I,  // loop variable
+       J,  // loop variable 2
+       L,  // loop variable 3
+       N,  // energy cost/distance for navigation
+
+       Q1, // enterprise X quadrant
+       Q2, // enterprise Y quadrant
        Q4, // enterprise X quadrant before moving
        Q5, // enterprise Y quadrant before moving
-       S8, // position in quadrant string array
-       T8, // time for warp travel
-       X5, // flag - left galaxy
-       L,  // loop variable
-       H1, // phaser power divided by # of klingons in quadrant
-       H,  // phaser damage to klingon
+
+       P,  // current # of torpedoes
+       P0, // max # of torpedoes
        X3, // torpedo X sector
        Y3, // torpedo Y sector
+
+       K3, // # of klingons in quadrant
+       K7, // starting # of klingons in galaxy
+       K9, // current # of klingons in galaxy
+
+       B3, // # of starbases in quadrant
+       B4, // starbase X sector
+       B5, // starbase Y sector
+       B9, // current # of starbases in galaxy
+
+       S3, // # of stars in quadrant
+
+       S8, // position in quadrant string array
+
+       H1, // phaser power divided by # of klingons in quadrant
+       H,  // phaser damage to klingon
+
+       J0, // spacing of names on galaxy map
+
        Z3, // get sector(): match result
-       D3, // estimated starbase repair time
-       A,  // direction/distance calculator: initial Y coord
+       Z4, // quadrant name(): X parameter
+       Z5, // quadrant name(): Y parameter
+
+       D0, // flag - docked
+       D1, // flag - damage control report started
+       G5, // quadrant name (): flag - region name only
        H8, // flag: region names only on galaxy map
            // direction/distance calculator: flag - don't loop through klingons
-       J0; // spacing of names on galaxy map
+       X5; // flag - left galaxy
+
 
 string s_Z,  // 25 space constant, for spacing galaxy map names and making quadrant string
        s_X,  // plural "S" and maximum warp factor
@@ -165,7 +207,7 @@ string s_Z,  // 25 space constant, for spacing galaxy map names and making quadr
 
 double b_FND(double D)
 {
-	return sqrt((K[(int)I][1] - S1) * (K[(int)I][1] - S1) + (K[(int)I][2] - S2) * (K[(int)I][2] - S2));
+	return sqrt((K[I][1] - S1) * (K[I][1] - S1) + (K[I][2] - S2) * (K[I][2] - S2));
 }
 
 double b_FNR(double R)
@@ -241,24 +283,24 @@ L_10:
 	s_Z = "                         ";
 	T = (int)(b_RND(1) * 20 + 20) * 100; T0 = T; T9 = 25 + (int)(b_RND(1) * 10); D0 = 0; E = 3000; E0 = E;
 	P = 10; P0 = P; S9 = 200; S = 0; B9 = 0; K9 = 0; s_X = ""; s_X0 = " IS ";
-// FIXME-DEF b_FND(D)=sqrt((K[(int)(I)][1]-S1)/* FIXME-POWER */2+(K[(int)(I)][2]-S2)/* FIXME-POWER */2);
+// FIXME-DEF b_FND(D)=sqrt((K[I][1]-S1)/* FIXME-POWER */2+(K[I][2]-S2)/* FIXME-POWER */2);
 // FIXME-DEF b_FNR(R)=(int)(b_RND(R)*7.98+1.01);
 // INITIALIZE ENTERPRIZE'S POSITION
 	Q1 = b_FNR(1); Q2 = b_FNR(1); S1 = b_FNR(1); S2 = b_FNR(1);
 	for (I = 1; I <= 9; I++) {
-		C[(int)(I)][1] = 0; C[(int)(I)][2] = 0;
+		C[I][1] = 0; C[I][2] = 0;
 	}
 	C[3][1] = -1; C[2][1] = -1; C[4][1] = -1; C[4][2] = -1; C[5][2] = -1; C[6][2] = -1;
 	C[1][2] = 1; C[2][2] = 1; C[6][1] = 1; C[7][1] = 1; C[8][1] = 1; C[8][2] = 1; C[9][2] = 1;
 	for (I = 1; I <= 8; I++) {
-		D[(int)(I)] = 0;
+		D[I] = 0;
 	}
 	s_A1 = "NAVSRSLRSPHATORSHEDAMCOMXXX";
 // SETUP WHAT EXHISTS IN GALAXY . . .
 // K3= # KLINGONS  B3= # STARBASES  S3 = # STARS
 	for (I = 1; I <= 8; I++) {
 		for (J = 1; J <= 8; J++) {
-			K3 = 0; Z[(int)(I)][(int)(J)] = 0; R1 = b_RND(1);
+			K3 = 0; Z[I][J] = 0; R1 = b_RND(1);
 			if (R1 > 0.98) {
 				K3 = 3; K9 = K9 + 3; goto L_980;
 			}
@@ -272,15 +314,15 @@ L_980:
 			B3 = 0; if (b_RND(1) > 0.96) {
 				B3 = 1; B9 = B9 + 1;
 			}
-			G[(int)(I)][(int)(J)] = K3 * 100 + B3 * 10 + b_FNR(1);
+			G[I][J] = K3 * 100 + B3 * 10 + b_FNR(1);
 		}
 	}
 	if (K9 > T9) T9 = K9 + 1;
 	if (B9 != 0) goto L_1200;
-	if (G[(int)(Q1)][(int)(Q2)] < 200) {
-		G[(int)(Q1)][(int)(Q2)] = G[(int)(Q1)][(int)(Q2)] + 120; K9 = K9 + 1;
+	if (G[Q1][Q2] < 200) {
+		G[Q1][Q2] = G[Q1][Q2] + 120; K9 = K9 + 1;
 	}
-	B9 = 1; G[(int)(Q1)][(int)(Q2)] = G[(int)(Q1)][(int)(Q2)] + 10; Q1 = b_FNR(1); Q2 = b_FNR(1);
+	B9 = 1; G[Q1][Q2] = G[Q1][Q2] + 10; Q1 = b_FNR(1); Q2 = b_FNR(1);
 L_1200:
 	K7 = K9; if (B9 != 1) {
 		s_X = "S"; s_X0 = " ARE ";
@@ -294,7 +336,7 @@ L_1200:
 	I = b_RND(1);   // IF INP(1)=13 THEN 1300
 // HERE ANY TIME NEW QUADRANT ENTERED
 L_1320:
-	Z4 = Q1; Z5 = Q2; K3 = 0; B3 = 0; S3 = 0; G5 = 0; D4 = 0.5 * b_RND(1); Z[(int)(Q1)][(int)(Q2)] = G[(int)(Q1)][(int)(Q2)];
+	Z4 = Q1; Z5 = Q2; K3 = 0; B3 = 0; S3 = 0; G5 = 0; D4 = 0.5 * b_RND(1); Z[Q1][Q2] = G[Q1][Q2];
 	if (Q1 < 1 || Q1 > 8 || Q2 < 1 || Q2 > 8) goto L_1600;
 	GOSUB_L_9030(); cout << "\n"; if (T0 != T) goto L_1490;
 	cout << "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n";
@@ -302,17 +344,17 @@ L_1320:
 L_1490:
 	cout << "NOW ENTERING " << s_G2 << " QUADRANT . . .\n";
 L_1500:
-	cout << "\n"; K3 = (int)(G[(int)(Q1)][(int)(Q2)] * 0.01); B3 = (int)(G[(int)(Q1)][(int)(Q2)] * 0.1) - 10 * K3;
-	S3 = G[(int)(Q1)][(int)(Q2)] - 100 * K3 - 10 * B3; if (K3 == 0) goto L_1590;
+	cout << "\n"; K3 = (int)(G[Q1][Q2] * 0.01); B3 = (int)(G[Q1][Q2] * 0.1) - 10 * K3;
+	S3 = G[Q1][Q2] - 100 * K3 - 10 * B3; if (K3 == 0) goto L_1590;
 	cout << "COMBAT AREA      CONDITION RED\n"; if (S > 200) goto L_1590;
 	cout << "   SHIELDS DANGEROUSLY LOW\n";
 L_1590:
 	for (I = 1; I <= 3; I++) {
-		K[(int)(I)][1] = 0; K[(int)(I)][2] = 0;
+		K[I][1] = 0; K[I][2] = 0;
 	}
 L_1600:
 	for (I = 1; I <= 3; I++) {
-		K[(int)(I)][3] = 0;
+		K[I][3] = 0;
 	}
 	s_Q = s_Z + s_Z + s_Z + s_Z + s_Z + s_Z + s_Z + b_LEFT(s_Z, 17);
 // POSITION ENTERPRISE IN QUADRANT, THEN PLACE "K3" KLINGONS, &
@@ -320,7 +362,7 @@ L_1600:
 	s_A = "<*>"; Z1 = S1; Z2 = S2; GOSUB_L_8670(); if (K3 < 1) goto L_1820;
 	for (I = 1; I <= K3; I++) {
 		GOSUB_L_8590(); s_A = "+K+"; Z1 = R1; Z2 = R2;
-		GOSUB_L_8670(); K[(int)(I)][1] = R1; K[(int)(I)][2] = R2; K[(int)(I)][3] = S9 * (0.5 + b_RND(1));
+		GOSUB_L_8670(); K[I][1] = R1; K[I][2] = R2; K[I][3] = S9 * (0.5 + b_RND(1));
 	}
 L_1820:
 	if (B3 < 1) goto L_1910;
@@ -408,20 +450,20 @@ L_2490:
 // KLINGONS MOVE/FIRE ON MOVING STARSHIP . . .
 L_2590:
 	for (I = 1; I <= K3; I++) {
-		if (K[(int)(I)][3] == 0) goto L_2700;
-		s_A = "   "; Z1 = K[(int)(I)][1]; Z2 = K[(int)(I)][2]; GOSUB_L_8670(); GOSUB_L_8590();
-		K[(int)(I)][1] = Z1; K[(int)(I)][2] = Z2; s_A = "+K+"; GOSUB_L_8670();
+		if (K[I][3] == 0) goto L_2700;
+		s_A = "   "; Z1 = K[I][1]; Z2 = K[I][2]; GOSUB_L_8670(); GOSUB_L_8590();
+		K[I][1] = Z1; K[I][2] = Z2; s_A = "+K+"; GOSUB_L_8670();
 L_2700:
 		;
 	}
 	if (GOSUB_L_6000() == RG_L_6240) return RG_L_6240;
 	D1 = 0; D6 = W1; if (W1 >= 1) D6 = 1;
 	for (I = 1; I <= 8; I++) {
-		if (D[(int)(I)] >= 0) goto L_2880;
-		D[(int)(I)] = D[(int)(I)] + D6; if (D[(int)(I)] > -0.1 && D[(int)(I)] < 0) {
-			D[(int)(I)] = -0.1; goto L_2880;
+		if (D[I] >= 0) goto L_2880;
+		D[I] = D[I] + D6; if (D[I] > -0.1 && D[I] < 0) {
+			D[I] = -0.1; goto L_2880;
 		}
-		if (D[(int)(I)] < 0) goto L_2880;
+		if (D[I] < 0) goto L_2880;
 		if (D1 != 1) {
 			D1 = 1; cout << "DAMAGE CONTROL REPORT:  ";
 		}
@@ -510,14 +552,14 @@ rg_t GOTO_L_4000()
 		aN[1] = -1; aN[2] = -2; aN[3] = -3;
 		for (J = Q2 - 1; J <= Q2 + 1; J++) {
 			if (I > 0 && I < 9 && J > 0 && J < 9) {
-				aN[(int)(J - Q2 + 2)] = G[(int)(I)][(int)(J)]; Z[(int)(I)][(int)(J)] = G[(int)(I)][(int)(J)];
+				aN[J - Q2 + 2] = G[I][J]; Z[I][J] = G[I][J];
 			}
 		}
 		for (L = 1; L <= 3; L++) {
-			cout << ": "; if (aN[(int)(L)] < 0) {
+			cout << ": "; if (aN[L] < 0) {
 				cout << "*** "; goto L_4230;
 			}
-			cout << b_RIGHT(b_STR(aN[(int)(L)] + 1000), 3) << " ";
+			cout << b_RIGHT(b_STR(aN[L] + 1000), 3) << " ";
 L_4230:
 			;
 		}
@@ -550,18 +592,18 @@ L_4360:
 	E = E - X; if (D[7] < 0) X = X * b_RND(1);
 	H1 = (int)(X / K3);
 	for (I = 1; I <= 3; I++) {
-		if (K[(int)(I)][3] <= 0) goto L_4670;
-		H = (int)((H1 / b_FND(0)) * (b_RND(1) + 2)); if (H > 0.15 * K[(int)(I)][3]) goto L_4530;
-		cout << "SENSORS SHOW NO DAMAGE TO ENEMY AT  " << K[(int)(I)][1] << " , " << K[(int)(I)][2] << "\n"; goto L_4670;
+		if (K[I][3] <= 0) goto L_4670;
+		H = (int)((H1 / b_FND(0)) * (b_RND(1) + 2)); if (H > 0.15 * K[I][3]) goto L_4530;
+		cout << "SENSORS SHOW NO DAMAGE TO ENEMY AT  " << K[I][1] << " , " << K[I][2] << "\n"; goto L_4670;
 L_4530:
-		K[(int)(I)][3] = K[(int)(I)][3] - H; cout << " " << H << " UNIT HIT ON KLINGON AT SECTOR " << K[(int)(I)][1] << " ,";
-		cout << " " << K[(int)(I)][2] << "\n"; if (K[(int)(I)][3] <= 0) {
+		K[I][3] = K[I][3] - H; cout << " " << H << " UNIT HIT ON KLINGON AT SECTOR " << K[I][1] << " ,";
+		cout << " " << K[I][2] << "\n"; if (K[I][3] <= 0) {
 			cout << "*** KLINGON DESTROYED ***\n"; goto L_4580;
 		}
-		cout << "   (SENSORS SHOW " << K[(int)(I)][3] << " UNITS REMAINING)\n"; goto L_4670;
+		cout << "   (SENSORS SHOW " << K[I][3] << " UNITS REMAINING)\n"; goto L_4670;
 L_4580:
-		K3 = K3 - 1; K9 = K9 - 1; Z1 = K[(int)(I)][1]; Z2 = K[(int)(I)][2]; s_A = "   "; GOSUB_L_8670();
-		K[(int)(I)][3] = 0; G[(int)(Q1)][(int)(Q2)] = G[(int)(Q1)][(int)(Q2)] - 100; Z[(int)(Q1)][(int)(Q2)] = G[(int)(Q1)][(int)(Q2)]; if (K9 <= 0) return RG_L_6370;
+		K3 = K3 - 1; K9 = K9 - 1; Z1 = K[I][1]; Z2 = K[I][2]; s_A = "   "; GOSUB_L_8670();
+		K[I][3] = 0; G[Q1][Q2] = G[Q1][Q2] - 100; Z[Q1][Q2] = G[Q1][Q2]; if (K9 <= 0) return RG_L_6370;
 L_4670:
 		;
 	}
@@ -595,11 +637,11 @@ L_4920:
 	s_A = "+K+"; Z1 = X; Z2 = Y; GOSUB_L_8830(); if (Z3 == 0) goto L_5210;
 	cout << "*** KLINGON DESTROYED ***\n"; K3 = K3 - 1; K9 = K9 - 1; if (K9 <= 0) return RG_L_6370;
 	for (I = 1; I <= 3; I++) {
-		if (X3 == K[(int)(I)][1] && Y3 == K[(int)(I)][2]) goto L_5190;
+		if (X3 == K[I][1] && Y3 == K[I][2]) goto L_5190;
 	}
 	I = 3;
 L_5190:
-	K[(int)(I)][3] = 0; goto L_5430;
+	K[I][3] = 0; goto L_5430;
 L_5210:
 	s_A = " * "; Z1 = X; Z2 = Y; GOSUB_L_8830(); if (Z3 == 0) goto L_5280;
 	cout << "STAR AT " << X3 << " , " << Y3 << " ABSORBED TORPEDO ENERGY.\n"; if (GOSUB_L_6000() == RG_L_6240) return RG_L_6240;
@@ -616,7 +658,7 @@ L_5400:
 	cout << "COURT MARTIAL!\n"; D0 = 0;
 L_5430:
 	Z1 = X; Z2 = Y; s_A = "   "; GOSUB_L_8670();
-	G[(int)(Q1)][(int)(Q2)] = K3 * 100 + B3 * 10 + S3; Z[(int)(Q1)][(int)(Q2)] = G[(int)(Q1)][(int)(Q2)]; if (GOSUB_L_6000() == RG_L_6240) return RG_L_6240;
+	G[Q1][Q2] = K3 * 100 + B3 * 10 + S3; Z[Q1][Q2] = G[Q1][Q2]; if (GOSUB_L_6000() == RG_L_6240) return RG_L_6240;
 	return RG_L_1990;
 L_5490:
 	cout << "TORPEDO MISSED\n"; if (GOSUB_L_6000() == RG_L_6240) return RG_L_6240;
@@ -649,7 +691,7 @@ rg_t GOTO_L_5690()
 L_5720:
 	D3 = 0;
 	for (I = 1; I <= 8; I++) {
-		if (D[(int)(I)] < 0) D3 = D3 + 0.1;
+		if (D[I] < 0) D3 = D3 + 0.1;
 	}
 	if (D3 == 0) return RG_L_1990;
 	cout << "\n"; D3 = D3 + D4; if (D3 >= 1) D3 = 0.9;
@@ -658,7 +700,7 @@ L_5720:
 	cout << "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)"; cout << "? "; cin >> s_A;
 	if (s_A != "Y") return RG_L_1990;
 	for (I = 1; I <= 8; I++) {
-		if (D[(int)(I)] < 0) D[(int)(I)] = 0;
+		if (D[I] < 0) D[I] = 0;
 	}
 	T = T + D3 + 0.1;
 L_5910:
@@ -678,9 +720,9 @@ rg_t GOSUB_L_6000()
 		cout << "STARBASE SHIELDS PROTECT THE ENTERPRISE\n"; return RG_PASS;
 	}
 	for (I = 1; I <= 3; I++) {
-		if (K[(int)(I)][3] <= 0) goto L_6200;
-		H = (int)((K[(int)(I)][3] / b_FND(1)) * (2 + b_RND(1))); S = S - H; K[(int)(I)][3] = K[(int)(I)][3] / (3 + b_RND(0));
-		cout << " " << H << " UNIT HIT ON ENTERPRISE FROM SECTOR " << K[(int)(I)][1] << " , " << K[(int)(I)][2] << "\n";
+		if (K[I][3] <= 0) goto L_6200;
+		H = (int)((K[I][3] / b_FND(1)) * (2 + b_RND(1))); S = S - H; K[I][3] = K[I][3] / (3 + b_RND(0));
+		cout << " " << H << " UNIT HIT ON ENTERPRISE FROM SECTOR " << K[I][1] << " , " << K[I][2] << "\n";
 		if (S <= 0) return RG_L_6240;
 		cout << "      <SHIELDS DOWN TO " << S << " UNITS>\n"; if (H < 20) goto L_6200;
 		if (b_RND(1) > 0.6 || H / S <= 0.02) goto L_6200;
@@ -820,10 +862,10 @@ L_7550:
 	for (I = 1; I <= 8; I++) {
 		cout << " " << I << " "; if (H8 == 0) goto L_7740;
 		for (J = 1; J <= 8; J++) {
-			cout << "   "; if (Z[(int)(I)][(int)(J)] == 0) {
+			cout << "   "; if (Z[I][J] == 0) {
 				cout << "***"; goto L_7720;
 			}
-			cout << b_RIGHT(b_STR(Z[(int)(I)][(int)(J)] + 1000), 3);
+			cout << b_RIGHT(b_STR(Z[I][J] + 1000), 3);
 L_7720:
 			;
 		}
@@ -855,8 +897,8 @@ L_8070:
 	cout << "FROM ENTERPRISE TO KLINGON BATTLE CRUSER" << s_X << "\n";
 	H8 = 0; 
 	for (I = 1; I <= 3; I++) {
-		if (K[(int)(I)][3] <= 0) goto L_8480;
-		W1 = K[(int)(I)][1]; X = K[(int)(I)][2];
+		if (K[I][3] <= 0) goto L_8480;
+		W1 = K[I][1]; X = K[I][2];
 L_8120:
 		C1 = S1; A = S2; goto L_8220;
 L_8150:
