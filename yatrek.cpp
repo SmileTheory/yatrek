@@ -1,7 +1,9 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <cmath>
 #include <ctime>
+#include <cctype>
 
 using namespace std;
 
@@ -74,6 +76,27 @@ string b_TAB(int len)
 string b_STR(int num)
 {
 	return to_string(num);
+}
+
+void b_INPUT(double& num)
+{
+	string s;
+	getline(cin, s);
+	stringstream(s) >> num;
+}
+
+void b_INPUT(double& num1, double& num2)
+{
+	string s;
+	getline(cin, s);
+	stringstream(s) >> num1 >> num2;
+}
+
+void b_INPUT(string& s)
+{
+	getline(cin, s);
+	for (auto& c: s)
+		c = toupper(c);
 }
 
 /*
@@ -386,7 +409,7 @@ L_1990:
 	cout << " AND SHIELD CONTROL\n"; cout << "IS PRESENTLY INCAPABLE OF CROSS";
 	cout << "-CIRCUITING TO ENGINE ROOM!!\n"; GOTO_L_6220(RG_L_6220); goto L_10;
 L_2060:
-	cout << "COMMAND"; cout << "? "; cin >> s_A;
+	cout << "COMMAND? "; b_INPUT(s_A);
 	ret = RG_PASS;
 	for (I = 1; I <= 9; I++) {
 		if (b_LEFT(s_A, 3) != b_MID(s_A1, 3 * I - 2, 3)) continue;
@@ -429,12 +452,12 @@ L_2060:
 // COURSE CONTROL BEGINS HERE
 rg_t GOTO_L_2300()
 {
-	cout << "COURSE (0-9)"; cout << "? "; cin >> C1; if (C1 == 9) C1 = 1;
+	cout << "COURSE (0-9)? "; b_INPUT(C1); if (C1 == 9) C1 = 1;
 	if (C1 >= 1 && C1 < 9) goto L_2350;
 	cout << "   LT. SULU REPORTS, 'INCORRECT COURSE DATA, SIR!'\n"; return RG_L_1990;
 L_2350:
 	s_X = "8"; if (D[1] < 0) s_X = "0.2";
-	cout << "WARP FACTOR (0-" << s_X << ")"; cout << "? "; cin >> W1; if (D[1] < 0 && W1 > 0.2) goto L_2470;
+	cout << "WARP FACTOR (0-" << s_X << ")? "; b_INPUT(W1); if (D[1] < 0 && W1 > 0.2) goto L_2470;
 	if (W1 > 0 && W1 <= 8) goto L_2490;
 	if (W1 == 0) return RG_L_1990;
 	cout << "   CHIEF ENGINEER SCOTT REPORTS 'THE ENGINES WON'T TAKE";
@@ -581,7 +604,7 @@ L_4330:
 	cout << "PHASERS LOCKED ON TARGET;  ";
 L_4360:
 	cout << "ENERGY AVAILABLE = " << E << " UNITS\n";
-	cout << "NUMBER OF UNITS TO FIRE"; cout << "? "; cin >> X; if (X <= 0) return RG_L_1990;
+	cout << "NUMBER OF UNITS TO FIRE? "; b_INPUT(X); if (X <= 0) return RG_L_1990;
 	if (E - X < 0) goto L_4360;
 	E = E - X; if (D[7] < 0) X = X * b_RND(1);
 	H1 = (int)(X / K3);
@@ -613,7 +636,7 @@ rg_t GOTO_L_4700()
 		cout << "PHOTON TUBES ARE NOT OPERATIONAL\n"; return RG_L_1990;
 	}
 L_4760:
-	cout << "PHOTON TORPEDO COURSE (1-9)"; cout << "? "; cin >> C1; if (C1 == 9) C1 = 1;
+	cout << "PHOTON TORPEDO COURSE (1-9)? "; b_INPUT(C1); if (C1 == 9) C1 = 1;
 	if (C1 >= 1 && C1 < 9) goto L_4850;
 	cout << "ENSIGN CHEKOV REPORTS,  'INCORRECT COURSE DATA, SIR!'\n";
 	return RG_L_1990;
@@ -663,7 +686,7 @@ rg_t GOTO_L_5530()
 	if (D[7] < 0) {
 		cout << "SHIELD CONTROL INOPERABLE\n"; return RG_L_1990;
 	}
-	cout << "ENERGY AVAILABLE = " << E + S << " "; cout << "NUMBER OF UNITS TO SHIELDS"; cout << "? "; cin >> X;
+	cout << "ENERGY AVAILABLE = " << E + S << " "; cout << "NUMBER OF UNITS TO SHIELDS? "; b_INPUT(X);
 	if (X < 0 || S == X) {
 		cout << "<SHIELDS UNCHANGED>\n"; return RG_L_1990;
 	}
@@ -689,7 +712,7 @@ L_5720:
 	cout << "\n"; D3 = D3 + D4; if (D3 >= 1) D3 = 0.9;
 	cout << "TECHNICIANS STANDING BY TO EFFECT REPAIRS TO YOUR SHIP;\n";
 	cout << "ESTIMATED TIME TO REPAIR: " << 0.01 * (int)(100 * D3) << " STARDATES\n";
-	cout << "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)"; cout << "? "; cin >> s_A;
+	cout << "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)? "; b_INPUT(s_A);
 	if (s_A != "Y") return RG_L_1990;
 	for (I = 1; I <= 8; I++) {
 		if (D[I] < 0) D[I] = 0;
@@ -746,7 +769,7 @@ L_6290:
 	cout << "\n\n"; if (B9 == 0) goto L_6360;
 	cout << "THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER\n";
 	cout << "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,\n";
-	cout << "LET HIM STEP FORWARD AND ENTER 'AYE'"; cout << "? "; cin >> s_A; if (s_A == "AYE") return;
+	cout << "LET HIM STEP FORWARD AND ENTER 'AYE'? "; b_INPUT(s_A); if (s_A == "AYE") return;
 L_6360:
 	exit(0);
 L_6370:
@@ -817,7 +840,7 @@ rg_t GOTO_L_7290()
 		cout << "COMPUTER DISABLED\n"; return RG_L_1990;
 	}
 L_7320:
-	cout << "COMPUTER ACTIVE AND AWAITING COMMAND"; cout << "? "; cin >> A; if (A < 0) return RG_L_1990;
+	cout << "COMPUTER ACTIVE AND AWAITING COMMAND? "; b_INPUT(A); if (A < 0) return RG_L_1990;
 	cout << "\n"; H8 = 1; if (A + 1 == 1) goto L_7540;
 	if (A + 1 == 2) goto L_7900;
 	if (A + 1 == 3) goto L_8070;
@@ -888,8 +911,8 @@ L_8120:
 L_8150:
 		cout << "DIRECTION/DISTANCE CALCULATOR:\n";
 		cout << "YOU ARE AT QUADRANT  " << Q1 << " , " << Q2 << "  SECTOR  " << S1 << " , " << S2 << "\n";
-		cout << "PLEASE ENTER\n"; cout << "  INITIAL COORDINATES (X,Y)"; cout << "? "; cin >> C1; cout << "? "; cin >> A;
-		cout << "  FINAL COORDINATES (X,Y)"; cout << "? "; cin >> W1; cout << "? "; cin >> X;
+		cout << "PLEASE ENTER\n"; cout << "  INITIAL COORDINATES (X,Y)? "; b_INPUT(C1, A);
+		cout << "  FINAL COORDINATES (X,Y)? "; b_INPUT(W1, X);
 L_8220:
 		X = X - A; A = C1 - W1; if (X < 0) goto L_8350;
 		if (A < 0) goto L_8410;
