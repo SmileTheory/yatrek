@@ -385,7 +385,7 @@ L_2060:
 	cout << "COMMAND"; cout << "? "; cin >> s_A;
 	ret = RG_PASS;
 	for (I = 1; I <= 9; I++) {
-		if (b_LEFT(s_A, 3) != b_MID(s_A1, 3 * I - 2, 3)) goto L_2160;
+		if (b_LEFT(s_A, 3) != b_MID(s_A1, 3 * I - 2, 3)) continue;
 		if (I == 1) ret = GOTO_L_2300();
 		else if (I == 2) ret = RG_L_1980;
 		else if (I == 3) ret = GOTO_L_4000();
@@ -396,8 +396,6 @@ L_2060:
 		else if (I == 8) ret = GOTO_L_7290();
 		else if (I == 9) ret = RG_L_6270;
 		break;
-L_2160:
-		;
 	}
 
 	if (ret == RG_L_1320)
@@ -450,26 +448,22 @@ L_2490:
 // KLINGONS MOVE/FIRE ON MOVING STARSHIP . . .
 L_2590:
 	for (I = 1; I <= K3; I++) {
-		if (K[I][3] == 0) goto L_2700;
+		if (K[I][3] == 0) continue;
 		s_A = "   "; Z1 = K[I][1]; Z2 = K[I][2]; GOSUB_L_8670(); GOSUB_L_8590();
 		K[I][1] = Z1; K[I][2] = Z2; s_A = "+K+"; GOSUB_L_8670();
-L_2700:
-		;
 	}
 	if (GOSUB_L_6000() == RG_L_6240) return RG_L_6240;
 	D1 = 0; D6 = W1; if (W1 >= 1) D6 = 1;
 	for (I = 1; I <= 8; I++) {
-		if (D[I] >= 0) goto L_2880;
+		if (D[I] >= 0) continue;
 		D[I] = D[I] + D6; if (D[I] > -0.1 && D[I] < 0) {
-			D[I] = -0.1; goto L_2880;
+			D[I] = -0.1; continue;
 		}
-		if (D[I] < 0) goto L_2880;
+		if (D[I] < 0) continue;
 		if (D1 != 1) {
 			D1 = 1; cout << "DAMAGE CONTROL REPORT:  ";
 		}
 		cout << b_TAB(8); R1 = I; GOSUB_L_8790(); cout << s_G2 << " REPAIR COMPLETED.\n";
-L_2880:
-		;
 	}
 	if (b_RND(1) > 0.2) goto L_3070;
 	R1 = b_FNR(1); if (b_RND(1) >= 0.6) goto L_3000;
@@ -485,11 +479,9 @@ L_3070:
 	X2 = C[(int)(C1)][2] + (C[(int)(C1 + 1)][2] - C[(int)(C1)][2]) * (C1 - (int)(C1)); Q4 = Q1; Q5 = Q2;
 	for (I = 1; I <= N; I++) {
 		S1 = S1 + X1; S2 = S2 + X2; if (S1 < 1 || S1 >= 9 || S2 < 1 || S2 >= 9) goto L_3500;
-		S8 = (int)(S1) * 24 + (int)(S2) * 3 - 26; if (b_MID(s_Q, S8, 2) == "  ") goto L_3360;
+		S8 = (int)(S1) * 24 + (int)(S2) * 3 - 26; if (b_MID(s_Q, S8, 2) == "  ") continue;
 		S1 = (int)(S1 - X1); S2 = (int)(S2 - X2); cout << "WARP ENGINES SHUT DOWN AT ";
 		cout << "SECTOR " << S1 << " , " << S2 << " DUE TO BAD NAVAGATION\n"; goto L_3370;
-L_3360:
-		;
 	}
 	S1 = (int)(S1); S2 = (int)(S2);
 L_3370:
@@ -557,11 +549,9 @@ rg_t GOTO_L_4000()
 		}
 		for (L = 1; L <= 3; L++) {
 			cout << ": "; if (aN[L] < 0) {
-				cout << "*** "; goto L_4230;
+				cout << "*** "; continue;
 			}
 			cout << b_RIGHT(b_STR(aN[L] + 1000), 3) << " ";
-L_4230:
-			;
 		}
 		cout << ":\n"; cout << s_O1 << "\n";
 	}
@@ -592,20 +582,18 @@ L_4360:
 	E = E - X; if (D[7] < 0) X = X * b_RND(1);
 	H1 = (int)(X / K3);
 	for (I = 1; I <= 3; I++) {
-		if (K[I][3] <= 0) goto L_4670;
+		if (K[I][3] <= 0) continue;
 		H = (int)((H1 / b_FND(0)) * (b_RND(1) + 2)); if (H > 0.15 * K[I][3]) goto L_4530;
-		cout << "SENSORS SHOW NO DAMAGE TO ENEMY AT  " << K[I][1] << " , " << K[I][2] << "\n"; goto L_4670;
+		cout << "SENSORS SHOW NO DAMAGE TO ENEMY AT  " << K[I][1] << " , " << K[I][2] << "\n"; continue;
 L_4530:
 		K[I][3] = K[I][3] - H; cout << " " << H << " UNIT HIT ON KLINGON AT SECTOR " << K[I][1] << " ,";
 		cout << " " << K[I][2] << "\n"; if (K[I][3] <= 0) {
 			cout << "*** KLINGON DESTROYED ***\n"; goto L_4580;
 		}
-		cout << "   (SENSORS SHOW " << K[I][3] << " UNITS REMAINING)\n"; goto L_4670;
+		cout << "   (SENSORS SHOW " << K[I][3] << " UNITS REMAINING)\n"; continue;
 L_4580:
 		K3 = K3 - 1; K9 = K9 - 1; Z1 = K[I][1]; Z2 = K[I][2]; s_A = "   "; GOSUB_L_8670();
 		K[I][3] = 0; G[Q1][Q2] = G[Q1][Q2] - 100; Z[Q1][Q2] = G[Q1][Q2]; if (K9 <= 0) return RG_L_6370;
-L_4670:
-		;
 	}
 	if (GOSUB_L_6000() == RG_L_6240) return RG_L_6240;
 	return RG_L_1990;
@@ -720,16 +708,14 @@ rg_t GOSUB_L_6000()
 		cout << "STARBASE SHIELDS PROTECT THE ENTERPRISE\n"; return RG_PASS;
 	}
 	for (I = 1; I <= 3; I++) {
-		if (K[I][3] <= 0) goto L_6200;
+		if (K[I][3] <= 0) continue;
 		H = (int)((K[I][3] / b_FND(1)) * (2 + b_RND(1))); S = S - H; K[I][3] = K[I][3] / (3 + b_RND(0));
 		cout << " " << H << " UNIT HIT ON ENTERPRISE FROM SECTOR " << K[I][1] << " , " << K[I][2] << "\n";
 		if (S <= 0) return RG_L_6240;
-		cout << "      <SHIELDS DOWN TO " << S << " UNITS>\n"; if (H < 20) goto L_6200;
-		if (b_RND(1) > 0.6 || H / S <= 0.02) goto L_6200;
+		cout << "      <SHIELDS DOWN TO " << S << " UNITS>\n"; if (H < 20) continue;
+		if (b_RND(1) > 0.6 || H / S <= 0.02) continue;
 		R1 = b_FNR(1); D[(int)(R1)] = D[(int)(R1)] - H / S - 0.5 * b_RND(1); GOSUB_L_8790();
 		cout << "DAMAGE CONTROL REPORTS " << s_G2 << " DAMAGED BY THE HIT'\n";
-L_6200:
-		;
 	}
 	return RG_PASS;
 }
@@ -770,10 +756,8 @@ void GOSUB_L_6430()
 {
 	for (I = S1 - 1; I <= S1 + 1; I++) {
 		for (J = S2 - 1; J <= S2 + 1; J++) {
-			if ((int)(I + 0.5) < 1 || (int)(I + 0.5) > 8 || (int)(J + 0.5) < 1 || (int)(J + 0.5) > 8) goto L_6540;
+			if ((int)(I + 0.5) < 1 || (int)(I + 0.5) > 8 || (int)(J + 0.5) < 1 || (int)(J + 0.5) > 8) continue;
 			s_A = ">!<"; Z1 = I; Z2 = J; GOSUB_L_8830(); if (Z3 == 1) goto L_6580;
-L_6540:
-			;
 		}
 	}
 	D0 = 0; goto L_6650;
@@ -803,23 +787,21 @@ L_6770:
 		if (I == 7) goto L_7180;
 		if (I == 8) goto L_7240;
 L_6850:
-		cout << "        STARDATE           " << (int)(T * 10) * 0.1 << "\n"; goto L_7260;
+		cout << "        STARDATE           " << (int)(T * 10) * 0.1 << "\n"; continue;
 L_6900:
-		cout << "        CONDITION          " << s_C << "\n"; goto L_7260;
+		cout << "        CONDITION          " << s_C << "\n"; continue;
 L_6960:
-		cout << "        QUADRANT           " << Q1 << " , " << Q2 << "\n"; goto L_7260;
+		cout << "        QUADRANT           " << Q1 << " , " << Q2 << "\n"; continue;
 L_7020:
-		cout << "        SECTOR             " << S1 << " , " << S2 << "\n"; goto L_7260;
+		cout << "        SECTOR             " << S1 << " , " << S2 << "\n"; continue;
 L_7070:
-		cout << "        PHOTON TORPEDOES   " << (int)(P) << "\n"; goto L_7260;
+		cout << "        PHOTON TORPEDOES   " << (int)(P) << "\n"; continue;
 L_7120:
-		cout << "        TOTAL ENERGY       " << (int)(E + S) << "\n"; goto L_7260;
+		cout << "        TOTAL ENERGY       " << (int)(E + S) << "\n"; continue;
 L_7180:
-		cout << "        SHIELDS            " << (int)(S) << "\n"; goto L_7260;
+		cout << "        SHIELDS            " << (int)(S) << "\n"; continue;
 L_7240:
 		cout << "        KLINGONS REMAINING " << (int)(K9) << "\n";
-L_7260:
-		;
 	}
 	cout << s_O1 << "\n"; return;
 }
@@ -863,11 +845,9 @@ L_7550:
 		cout << " " << I << " "; if (H8 == 0) goto L_7740;
 		for (J = 1; J <= 8; J++) {
 			cout << "   "; if (Z[I][J] == 0) {
-				cout << "***"; goto L_7720;
+				cout << "***"; continue;
 			}
 			cout << b_RIGHT(b_STR(Z[I][J] + 1000), 3);
-L_7720:
-			;
 		}
 		goto L_7850;
 L_7740:
@@ -897,7 +877,7 @@ L_8070:
 	cout << "FROM ENTERPRISE TO KLINGON BATTLE CRUSER" << s_X << "\n";
 	H8 = 0; 
 	for (I = 1; I <= 3; I++) {
-		if (K[I][3] <= 0) goto L_8480;
+		if (K[I][3] <= 0) continue;
 		W1 = K[I][1]; X = K[I][2];
 L_8120:
 		C1 = S1; A = S2; goto L_8220;
@@ -936,8 +916,6 @@ L_8450:
 		cout << "DIRECTION = " << C1 + (abs(X) / abs(A)) << "\n";
 L_8460:
 		cout << "DISTANCE = " << sqrt(X * X + A * A) << "\n"; if (H8 == 1) return RG_L_1990;
-L_8480:
-		;
 	}
 	return RG_L_1990;
 L_8500:
