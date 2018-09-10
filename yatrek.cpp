@@ -76,10 +76,92 @@ string b_STR(int num)
 	return to_string(num);
 }
 
-double G[9][9], C[10][3], K[4][4], aN[4], Z[9][9], D[9];
+double G[9][9],  // galaxy info: 100 * klingons + 10 * starbases + stars
+       C[10][3], // course calc constants
+       K[4][4],  // klingon info: [1] = x [2] = y [3] = power
+       aN[4],    // long range scan info, same format as G[][]
+       Z[9][9],  // known galaxy info, same format as G[]
+       D[9];     // devices state of repair, < 0 -> damaged
 
-double N, T, T0, T9, D0, E, E0, P, P0, S9, S, B9, K9, I, S1, S2, R, Q1, Q2, J, K3, R1, B3, K7, Z4, Z5, S3, G5, D4, Z1, Z2, R2, B4, B5, C1, W1, D1, D6, X1, X, Y, X2, Q4, Q5, S8, T8, X5, L, H1, H, X3, Y3, Z3, D3, A, H8, J0;
-string s_Z, s_X, s_X0, s_A1, s_G2, s_Q, s_A, s_O1, s_C;
+double N,  // energy cost/distance for navigation
+       T,  // current stardate
+       T0, // initial stardate
+       T9, // remaining stardates
+       D0, // docked flag
+       E,  // current energy
+       E0, // max energy
+       P,  // current # of torpedoes
+       P0, // max # of torpedoes
+       S9, // average klingon energy
+       S,  // shield strength
+       B9, // current # of starbases in galaxy
+       K9, // current # of klingons in galaxy
+       I,  // loop variable
+       S1, // enterprise X sector
+       S2, // enterprise Y sector
+       Q1, // enterprise X quadrant
+       Q2, // enterprise Y quadrant
+       J,  // loop variable 2
+       K3, // # of klingons in quadrant
+       R1, // random sector(): X result
+           // galaxy gen: random number
+           // damage control: device number
+           // klingons shooting: device number
+           // repair: device number
+       B3, // # of starbases in quadrant
+       K7, // starting # of klingons in galaxy
+       Z4, // quadrant name(): X parameter
+       Z5, // quadrant name(): Y parameter
+       S3, // # of stars in quadrant
+       G5, // quadrant name (): flag - region name only
+       D4, // random extra starbase repair time
+       Z1, // set/get sector(): X parameter
+       Z2, // set/get sector(): Y parameter
+       R2, // random sector(): Y result
+       B4, // starbase X sector
+       B5, // starbase Y sector
+       C1, // warp/torpedo course
+           // direction/distance calculator: initial X coord
+       W1, // warp factor
+           // direction/distance calculator: final X coord
+       D1, // flag - damage control report started
+       D6, // damage repair amount
+       X1, // course X delta
+       X,  // enterprise X sector before moving
+           // later absolute X coord in galaxy when leaving quadrant
+           // direction/distance calculator: final Y coord
+       Y,  // enterprise Y sector before moving
+           // later absolute Y coord in galaxy when leaving quadrant
+       X2, // course Y delta
+       Q4, // enterprise X quadrant before moving
+       Q5, // enterprise Y quadrant before moving
+       S8, // position in quadrant string array
+       T8, // time for warp travel
+       X5, // flag - left galaxy
+       L,  // loop variable
+       H1, // phaser power divided by # of klingons in quadrant
+       H,  // phaser damage to klingon
+       X3, // torpedo X sector
+       Y3, // torpedo Y sector
+       Z3, // get sector(): match result
+       D3, // estimated starbase repair time
+       A,  // direction/distance calculator: initial Y coord
+       H8, // flag: region names only on galaxy map
+           // direction/distance calculator: flag - don't loop through klingons
+       J0; // spacing of names on galaxy map
+
+string s_Z,  // 25 space constant, for spacing galaxy map names and making quadrant string
+       s_X,  // plural "S" and maximum warp factor
+       s_X0, // " is " or " are "
+       s_A1, // list of commands constant
+       s_G2, // quadrant/device (): name result
+       s_Q,  // quadrant string
+       s_A,  // command input
+             // get/set sector (): object parameter
+             // damage report routine: authorize repair input
+             // game over routine: another game input
+       s_O1, // horizontal rules
+       s_C;  // alert state (GREEN, *RED*, YELLOW, DOCKED)
 
 double b_FND(double D)
 {
