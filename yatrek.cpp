@@ -216,32 +216,36 @@ double b_FNR(double R)
 }
 
 typedef enum {
-	RG_PASS	= 0,
-	RG_L_1320,
-	RG_L_1980,
-	RG_L_1990,
-	RG_L_6220,
-	RG_L_6240,
-	RG_L_6270,
-	RG_L_6370
+	RG_PASS	= 0, // don't goto
+
+	// main loop gotos:
+	RG_L_1320,   // goto new quadrant entered
+	RG_L_1980,   // goto initial srs scan
+	RG_L_1990,   // goto low energy check
+
+	// end of game gotos:
+	RG_L_6220,   // time over or out of energy
+	RG_L_6240,   // enterprise destroyed
+	RG_L_6270,   // resigned or last starbase destroyed
+	RG_L_6370    // last klingon destroyed
 } rg_t;
 
-rg_t GOTO_L_2300();
-void GOSUB_L_3910();
-rg_t GOTO_L_4000();
-rg_t GOTO_L_4260();
-rg_t GOTO_L_4700();
-rg_t GOTO_L_5530();
-rg_t GOTO_L_5690();
-rg_t GOSUB_L_6000();
-void GOTO_L_6220(rg_t ret);
-void GOSUB_L_6430();
-rg_t GOTO_L_7290();
-void GOSUB_L_8590();
-void GOSUB_L_8670();
-void GOSUB_L_8790();
-void GOSUB_L_8830();
-void GOSUB_L_9030();
+rg_t GOTO_L_2300();  // course control
+void GOSUB_L_3910(); // maneuver energy
+rg_t GOTO_L_4000();  // long range sensors
+rg_t GOTO_L_4260();  // phaser control
+rg_t GOTO_L_4700();  // photon torpedo
+rg_t GOTO_L_5530();  // shield control
+rg_t GOTO_L_5690();  // damage control
+rg_t GOSUB_L_6000(); // klingons shooting
+void GOTO_L_6220(rg_t ret); // end of game
+void GOSUB_L_6430(); // short range sensors & docking check
+rg_t GOTO_L_7290();  // library-computer
+void GOSUB_L_8590(); // find empty sector
+void GOSUB_L_8670(); // set object at sector
+void GOSUB_L_8790(); // get device name
+void GOSUB_L_8830(); // is object at sector
+void GOSUB_L_9030(); // get quadrant name
 
 int main(int argc, char *argv[])
 {
