@@ -239,7 +239,7 @@ double b_FNR(double R)
 }
 
 typedef enum {
-	RG_PASS	= 0, // don't goto
+	RG_PASS = 0, // don't goto
 
 	// main loop gotos:
 	RG_L_1320,   // goto new quadrant entered
@@ -250,7 +250,16 @@ typedef enum {
 	RG_L_6220,   // time over or out of energy
 	RG_L_6240,   // enterprise destroyed
 	RG_L_6270,   // resigned or last starbase destroyed
-	RG_L_6370    // last klingon destroyed
+	RG_L_6370,   // last klingon destroyed
+
+	// galaxy map gotos:
+	RG_L_7400,   // galaxy region name map
+	RG_L_7540,   // cumulative galactic record
+
+	// direction/distance calculator gotos
+	RG_L_8070,   // photon torpedo data
+	RG_L_8150,   // starbase nav data
+	RG_L_8500    // direction/distance calculator
 } rg_t;
 
 rg_t GOTO_L_2300();  // course control
@@ -264,11 +273,15 @@ rg_t GOSUB_L_6000(); // klingons shooting
 void GOTO_L_6220(rg_t ret); // end of game
 void GOSUB_L_6430(); // short range sensors & docking check
 rg_t GOTO_L_7290();  // library-computer
+rg_t GOTO_L_7400(rg_t ret); // galaxy map/cumulative galactic record
+rg_t GOTO_L_7900();  // status report
+rg_t GOTO_L_8070(rg_t ret); // torpedo data/nav data/dir calc
 void GOSUB_L_8590(); // find empty sector
 void GOSUB_L_8670(); // set object at sector
 void GOSUB_L_8790(); // get device name
 void GOSUB_L_8830(); // is object at sector
 void GOSUB_L_9030(); // get quadrant name
+
 
 int main(int argc, char *argv[])
 {
@@ -550,6 +563,7 @@ L_3860:
 	T = T + 1; GOSUB_L_3910(); return RG_L_1320;
 }
 
+
 // MANEUVER ENERGY S/R **
 void GOSUB_L_3910()
 {
@@ -558,6 +572,7 @@ void GOSUB_L_3910()
 	S = S + E; E = 0; if (S <= 0) S = 0;
 	return;
 }
+
 
 // LONG RANGE SENSOR SCAN CODE
 rg_t GOTO_L_4000()
@@ -590,6 +605,7 @@ rg_t GOTO_L_4270()
 	cout << "SCIENCE OFFICER SPOCK REPORTS  'SENSORS SHOW NO ENEMY SHIPS\n";
 	cout << "                                IN THIS QUADRANT'\n"; return RG_L_1990;
 }
+
 
 // PHASER CONTROL CODE BEGINS HERE
 rg_t GOTO_L_4260()
@@ -625,6 +641,7 @@ L_4580:
 	if (GOSUB_L_6000() == RG_L_6240) return RG_L_6240;
 	return RG_L_1990;
 }
+
 
 // PHOTON TORPEDO CODE BEGINS HERE
 rg_t GOTO_L_4700()
@@ -680,6 +697,7 @@ L_5490:
 	return RG_L_1990;
 }
 
+
 // SHIELD CONTROL
 rg_t GOTO_L_5530()
 {
@@ -697,6 +715,7 @@ L_5630:
 	E = E + S - X; S = X; cout << "DEFLECTOR CONTROL ROOM REPORT:\n";
 	cout << "  'SHIELDS NOW AT " << (int)(S) << " UNITS PER YOUR COMMAND.'\n"; return RG_L_1990;
 }
+
 
 // DAMAGE CONTROL
 rg_t GOTO_L_5690()
@@ -727,6 +746,7 @@ L_5910:
 	return RG_L_1990;
 }
 
+
 // KLINGONS SHOOTING
 rg_t GOSUB_L_6000()
 {
@@ -746,6 +766,7 @@ rg_t GOSUB_L_6000()
 	}
 	return RG_PASS;
 }
+
 
 // END OF GAME
 void GOTO_L_6220(rg_t ret)
@@ -777,6 +798,7 @@ L_6370:
 	cout << "MENACING THE FDERATION HAS BEEN DESTROYED.\n\n";
 	cout << "YOUR EFFICIENCY RATING IS " << 1000 * (K7 / (T - T0)) * (K7 / (T - T0)) << "\n"; goto L_6290;
 }
+
 
 // SHORT RANGE SENSOR SCAN & STARTUP SUBROUTINE
 void GOSUB_L_6430()
@@ -833,20 +855,27 @@ L_7240:
 	cout << s_O1 << "\n"; return;
 }
 
+
 // LIBRARY COMPUTER CODE
 rg_t GOTO_L_7290()
 {
+	rg_t ret = RG_PASS;
 	if (D[8] < 0) {
 		cout << "COMPUTER DISABLED\n"; return RG_L_1990;
 	}
 L_7320:
 	cout << "COMPUTER ACTIVE AND AWAITING COMMAND? "; b_INPUT(A); if (A < 0) return RG_L_1990;
-	cout << "\n"; H8 = 1; if (A + 1 == 1) goto L_7540;
-	if (A + 1 == 2) goto L_7900;
-	if (A + 1 == 3) goto L_8070;
-	if (A + 1 == 4) goto L_8500;
-	if (A + 1 == 5) goto L_8150;
-	if (A + 1 == 6) goto L_7400;
+	cout << "\n"; H8 = 1;
+	if (A + 1 == 1) ret = GOTO_L_7400(RG_L_7540);
+	else if (A + 1 == 2) ret = GOTO_L_7900();
+	else if (A + 1 == 3) ret = GOTO_L_8070(RG_L_8070);
+	else if (A + 1 == 4) ret = GOTO_L_8070(RG_L_8500);
+	else if (A + 1 == 5) ret = GOTO_L_8070(RG_L_8150);
+	else if (A + 1 == 6) ret = GOTO_L_7400(RG_L_7400);
+
+	if (ret != RG_PASS)
+		return ret;
+
 	cout << "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n";
 	cout << "   0 = CUMULATIVE GALACTIC RECORD\n";
 	cout << "   1 = STATUS REPORT\n";
@@ -854,8 +883,16 @@ L_7320:
 	cout << "   3 = STARBASE NAV DATA\n";
 	cout << "   4 = DIRECTION/DISTANCE CALCULATOR\n";
 	cout << "   5 = GALAXY 'REGION NAME' MAP\n\n"; goto L_7320;
+}
+
+
+// GALAXY MAP/CUMULATIVE GALACTIC RECORD
+rg_t GOTO_L_7400(rg_t ret)
+{
+	if (ret == RG_L_7540)
+		goto L_7540;
+
 // SETUP TO CHANGE CUM GAL RECORD TO GALAXY MAP
-L_7400:
 	H8 = 0; G5 = 1; cout << "                        THE GALAXY\n"; goto L_7550;
 // CUM GALACTIC RECORD
 L_7540:
@@ -884,8 +921,12 @@ L_7850:
 		cout << "\n"; cout << s_O1 << "\n";
 	}
 	cout << "\n"; return RG_L_1990;
+}
+
+
 // STATUS REPORT
-L_7900:
+rg_t GOTO_L_7900()
+{
 	cout << "   STATUS REPORT:\n"; s_X = ""; if (K9 > 1) s_X = "S";
 	cout << "KLINGON" << s_X << " LEFT:  " << K9 << "\n";
 	cout << "MISSION MUST BE COMPLETED IN " << 0.1 * (int)((T0 + T9 - T) * 10) << " STARDATES\n";
@@ -897,8 +938,17 @@ L_7900:
 L_8010:
 	cout << "YOUR STUPIDITY HAS LEFT YOU ON YOUR ON IN\n";
 	cout << "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!\n"; return GOTO_L_5690();
+}
+
+
 // TORPEDO, BASE NAV, D/D CALCULATOR
-L_8070:
+rg_t GOTO_L_8070(rg_t ret)
+{
+	if (ret == RG_L_8150)
+		goto L_8150;
+	else if (ret == RG_L_8500)
+		goto L_8500;
+
 	if (K3 <= 0) return GOTO_L_4270();
 	s_X = ""; if (K3 > 1) s_X = "S";
 	cout << "FROM ENTERPRISE TO KLINGON BATTLE CRUSER" << s_X << "\n";
