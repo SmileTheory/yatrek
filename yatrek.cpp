@@ -915,8 +915,8 @@ L_7550:
 		}
 		goto L_7850;
 L_7740:
-		Z4 = I; Z5 = 1; GOSUB_L_9030(); J0 = (int)(15 - 0.5 * b_LEN(s_G2)); cout << b_TAB(J0) << s_G2;
-		Z5 = 5; GOSUB_L_9030(); J0 = (int)(39 - 0.5 * b_LEN(s_G2)); cout << b_TAB(J0) << s_G2;
+		Z4 = I; Z5 = 1; GOSUB_L_9030(); J0 = (int)(12 - 0.5 * b_LEN(s_G2)); cout << b_TAB(J0) << s_G2 << b_TAB(J0 + b_LEN(s_G2) % 2);
+		Z5 = 5; GOSUB_L_9030(); J0 = (int)(12 - 0.5 * b_LEN(s_G2)); cout << b_TAB(J0) << s_G2;
 L_7850:
 		cout << "\n"; cout << s_O1 << "\n";
 	}
