@@ -11,7 +11,7 @@ using namespace std;
 // below from "A small noncryptographic PRNG"
 // http://burtleburtle.net/bob/rand/smallprng.html
 
-typedef unsigned long int u4;
+typedef uint32_t u4;
 typedef struct ranctx { u4 a; u4 b; u4 c; u4 d; } ranctx;
 
 #define rot(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
