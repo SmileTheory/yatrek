@@ -120,8 +120,13 @@ void b_INPUT(string& s)
  * together.
  */
 
+// course calc constants
+const int C[10][3] = {
+	{ 0, 0, 0}, { 0, 0, 1}, { 0, -1, 1}, { 0, -1, 0}, { 0, -1, -1},
+	{ 0, 0, -1}, { 0, 1, -1}, { 0, 1, 0}, { 0, 1, 1}, { 0, 0, 1}
+};
+
 int    G[9][9],  // galaxy info: 100 * klingons + 10 * starbases + stars
-       C[10][3], // course calc constants
        K[4][4],  // klingon info: [1] = x [2] = y [3] = power
        aN[4],    // long range scan info, same format as G[][]
        Z[9][9];  // known galaxy info, same format as G[][]
@@ -204,20 +209,23 @@ int    I,  // loop variable
            // direction/distance calculator: flag - don't loop through klingons
        X5; // flag - left galaxy
 
-bool Z3;
+// 25 spaces, for spacing galaxy map names and making quadrant string
+const string s_Z = "                         ";
 
-string s_Z,  // 25 space constant, for spacing galaxy map names and making quadrant string
-       s_X,  // plural "S" and maximum warp factor
-       s_X0, // " is " or " are "
-       s_A1, // list of commands constant
-       s_G2, // quadrant/device (): name result
+// list of commands
+const char *s_A1 = "NAVSRSLRSPHATORSHEDAMCOMXXX";
+
+const char *s_X,  // plural "s" and maximum warp factor
+           *s_X0, // " is " or " are "
+           *s_O1, // horizontal rules
+           *s_C;  // alert state (GREEN, *RED*, YELLOW, DOCKED)
+
+string s_G2, // quadrant/device (): name result
        s_Q,  // quadrant string
-       s_A,  // command input
+       s_A;  // command input
              // get/set sector (): object parameter
              // damage report routine: authorize repair input
              // game over routine: another game input
-       s_O1, // horizontal rules
-       s_C;  // alert state (GREEN, *RED*, YELLOW, DOCKED)
 
 double b_FND(double D)
 {
@@ -311,22 +319,18 @@ L_10:
 	cout << "                    THE USS ENTERPRISE --- NCC-1701\n";
 	cout << "\n\n\n\n\n";
 // CLEAR 600
-	s_Z = "                         ";
+
 	T = (int)(b_RND(1) * 20 + 20) * 100; T0 = T; T9 = 25 + (int)(b_RND(1) * 10); D0 = 0; E = 3000; E0 = E;
 	P = 10; P0 = P; S9 = 200; S = 0; B9 = 0; K9 = 0; s_X = ""; s_X0 = " IS ";
 // FIXME-DEF b_FND(D)=sqrt((K[I][1]-S1)/* FIXME-POWER */2+(K[I][2]-S2)/* FIXME-POWER */2);
 // FIXME-DEF b_FNR(R)=(int)(b_RND(R)*7.98+1.01);
 // INITIALIZE ENTERPRIZE'S POSITION
 	Q1 = b_FNR(1); Q2 = b_FNR(1); S1 = b_FNR(1); S2 = b_FNR(1);
-	for (I = 1; I <= 9; I++) {
-		C[I][1] = 0; C[I][2] = 0;
-	}
-	C[3][1] = -1; C[2][1] = -1; C[4][1] = -1; C[4][2] = -1; C[5][2] = -1; C[6][2] = -1;
-	C[1][2] = 1; C[2][2] = 1; C[6][1] = 1; C[7][1] = 1; C[8][1] = 1; C[8][2] = 1; C[9][2] = 1;
+
 	for (I = 1; I <= 8; I++) {
 		D[I] = 0;
 	}
-	s_A1 = "NAVSRSLRSPHATORSHEDAMCOMXXX";
+
 // SETUP WHAT EXHISTS IN GALAXY . . .
 // K3= # KLINGONS  B3= # STARBASES  S3 = # STARS
 	for (I = 1; I <= 8; I++) {
@@ -1058,31 +1062,16 @@ void set_sector(double Z1, double Z2, const string& s_A)
 // PRINTS DEVICE NAME
 void get_device_name(int R1)
 {
-	if (R1 == 1) goto L_8792;
-	if (R1 == 2) goto L_8794;
-	if (R1 == 3) goto L_8796;
-	if (R1 == 4) goto L_8798;
-	if (R1 == 5) goto L_8800;
-	if (R1 == 6) goto L_8802;
-	if (R1 == 7) goto L_8804;
-	if (R1 == 8) goto L_8806;
-	;
-L_8792:
-	s_G2 = "WARP ENGINES"; return;
-L_8794:
-	s_G2 = "SHORT RANGE SENSORS"; return;
-L_8796:
-	s_G2 = "LONG RANGE SENSORS"; return;
-L_8798:
-	s_G2 = "PHASER CONTROL"; return;
-L_8800:
-	s_G2 = "PHOTON TUBES"; return;
-L_8802:
-	s_G2 = "DAMAGE CONTROL"; return;
-L_8804:
-	s_G2 = "SHIELD CONTROL"; return;
-L_8806:
-	s_G2 = "LIBRARY-COMPUTER"; return;
+	const char *device_names[] = {
+		"WARP ENGINES", "SHORT RANGE SENSORS", "LONG RANGE SENSORS",
+		"PHASER CONTROL", "PHOTON TUBES", "DAMAGE CONTROL",
+		"SHIELD CONTROL", "LIBRARY-COMPUTER"
+	};
+
+	if (R1 >= 1 && R1 <= 8)
+		s_G2 = device_names[R1 - 1];
+	else
+		s_G2 = device_names[0];
 }
 
 
@@ -1098,78 +1087,21 @@ bool is_sector(double Z1, double Z2, const string& s_A)
 // CALL WITH G5=1 TO GET REGION NAME ONLY
 void get_quadrant_name(int Z4, int Z5, bool G5)
 {
-	if (Z5 <= 4) {
-		if (Z4 == 1) goto L_9040;
-		if (Z4 == 2) goto L_9050;
-		if (Z4 == 3) goto L_9060;
-		if (Z4 == 4) goto L_9070;
-		if (Z4 == 5) goto L_9080;
-		if (Z4 == 6) goto L_9090;
-		if (Z4 == 7) goto L_9100;
-		if (Z4 == 8) goto L_9110;
-		;
-	}
-	goto L_9120;
-L_9040:
-	s_G2 = "ANTARES"; goto L_9210;
-L_9050:
-	s_G2 = "RIGEL"; goto L_9210;
-L_9060:
-	s_G2 = "PROCYON"; goto L_9210;
-L_9070:
-	s_G2 = "VEGA"; goto L_9210;
-L_9080:
-	s_G2 = "CANOPUS"; goto L_9210;
-L_9090:
-	s_G2 = "ALTAIR"; goto L_9210;
-L_9100:
-	s_G2 = "SAGITTARIUS"; goto L_9210;
-L_9110:
-	s_G2 = "POLLUX"; goto L_9210;
-L_9120:
-	if (Z4 == 1) goto L_9130;
-	if (Z4 == 2) goto L_9140;
-	if (Z4 == 3) goto L_9150;
-	if (Z4 == 4) goto L_9160;
-	if (Z4 == 5) goto L_9170;
-	if (Z4 == 6) goto L_9180;
-	if (Z4 == 7) goto L_9190;
-	if (Z4 == 8) goto L_9200;
-	;
-L_9130:
-	s_G2 = "SIRIUS"; goto L_9210;
-L_9140:
-	s_G2 = "DENEB"; goto L_9210;
-L_9150:
-	s_G2 = "CAPELLA"; goto L_9210;
-L_9160:
-	s_G2 = "BETELGEUSE"; goto L_9210;
-L_9170:
-	s_G2 = "ALDEBARAN"; goto L_9210;
-L_9180:
-	s_G2 = "REGULUS"; goto L_9210;
-L_9190:
-	s_G2 = "ARCTURUS"; goto L_9210;
-L_9200:
-	s_G2 = "SPICA";
-L_9210:
-	if (!G5) {
-		if (Z5 == 1) goto L_9230;
-		if (Z5 == 2) goto L_9240;
-		if (Z5 == 3) goto L_9250;
-		if (Z5 == 4) goto L_9260;
-		if (Z5 == 5) goto L_9230;
-		if (Z5 == 6) goto L_9240;
-		if (Z5 == 7) goto L_9250;
-		if (Z5 == 8) goto L_9260;
-	}
-	return;
-L_9230:
-	s_G2 = s_G2 + " I"; return;
-L_9240:
-	s_G2 = s_G2 + " II"; return;
-L_9250:
-	s_G2 = s_G2 + " III"; return;
-L_9260:
-	s_G2 = s_G2 + " IV"; return;
+	const char *quadrant_names[] = {
+		"ANTARES", "RIGEL", "PROCYON", "VEGA", "CANOPUS", "ALTAIR",
+		"SAGITTARIUS", "POLLUX", "SIRIUS", "DENEB", "CAPELLA",
+		"BETELGEUSE", "ALDEBARAN", "REGULUS", "ARCTURUS", "SPICA"
+	};
+
+	const char *quadrant_numbers[] = {
+		" I", " II", " III", " IV"
+	};
+
+	if (Z4 >= 1 && Z4 <= 8)
+		s_G2 = quadrant_names[Z4 + ((Z5 <= 4) ? -1 : 7)];
+	else
+		s_G2 = quadrant_names[8];
+
+	if (!G5 && Z5 >= 1 && Z5 <= 8)
+		s_G2 = s_G2 + quadrant_numbers[(int)(Z5 - 1) % 4];
 }
