@@ -233,6 +233,162 @@ string get_device_name(int R1);
 bool is_sector(double Z1, double Z2, const char *s_A);
 string get_quadrant_name(int Z4, int Z5, bool G5);
 
+void linefeeds(int num)
+{
+	while (num--)
+		cout << endl;
+}
+
+void instructions()
+{
+	string s_K;
+
+	linefeeds(12);
+	cout << b_SPC(10) << "*************************************\n"
+	     << b_SPC(10) << "*                                   *\n"
+	     << b_SPC(10) << "*                                   *\n"
+	     << b_SPC(10) << "*      * * SUPER STAR TREK * *      *\n"
+	     << b_SPC(10) << "*                                   *\n"
+	     << b_SPC(10) << "*                                   *\n"
+	     << b_SPC(10) << "*************************************\n";
+	linefeeds(8);
+
+	cout << "DO YOU NEED INSTRUCTIONS (Y/N)? ";
+	b_INPUT(s_K);
+
+	if (s_K=="N")
+		return;
+
+	cout << "\n";
+	cout << "      INSTRUCTIONS FOR 'SUPER STAR TREK'\n"
+	        "\n"
+	        "1. WHEN YOU SEE \\COMMAND ?\\ PRINTED, ENTER ONE OF THE LEGAL\n"
+	        "     COMMANDS (NAV,SRS,LRS,PHA,TOR,SHE,DAM,COM, OR XXX).\n"
+	        "2. IF YOU SHOULD TYPE IN AN ILLEGAL COMMAND, YOU'LL GET A SHORT\n"
+	        "     LIST OF THE LEGAL COMMANDS PRINTED OUT.\n"
+	        "3. SOME COMMANDS REQUIRE YOU TO ENTER DATA (FOR EXAMPLE, THE\n"
+	        "     'NAV' COMMAND COMES BACK WITH 'COURSE (1-9) ?'.)  IF YOU\n"
+	        "     TYPE IN ILLEGAL DATA (LIKE NEGATIVE NUMBERS), THAT COMMAND\n"
+	        "     WILL BE ABORTED\n"
+	        "\n"
+	        "     THE GALAXY IS DIVIDED INTO AN 8 X 8 QUADRANT GRID,\n"
+	        "AND EACH QUADRANT IS FURTHER DIVIDED INTO AN 8 X 8 SECTOR GRID.\n"
+	        "\n"
+	        "     YOU WILL BE ASSIGNED A STARTING POINT SOMEWHERE IN THE\n"
+	        "GALAXY TO BEGIN A TOUR OF DUTY AS COMMANDER OF THE STARSHIP\n"
+	        "\\ENTERPRISE\\; YOUR MISSION: TO SEEK AND DESTROY THE FLEET OF\n"
+	        "KLINGON WARWHIPS WHICH ARE MENACING THE UNITED FEDERATION OF\n"
+	        "PLANETS.\n"
+	        "\n";
+	linefeeds(23 - 20);
+	cout << "-PRESS ENTER TO CONTINUE-";
+	cin.get(); cin.sync();
+
+	cout << "     YOU HAVE THE FOLLOWING COMMANDS AVAILABLE TO YOU AS CAPTAIN\n"
+	        "OF THE STARSHIP ENTERPRISE:\n"
+	        "\n"
+	        "\\NAV\\ COMMAND = WARP ENGINE CONTROL --\n"
+	        "     COURSE IS IN A CIRCULAR NUMERICAL      4  3  2\n"
+	        "     VECTOR ARRANGEMENT AS SHOWN             . . .\n"
+	        "     INTEGER AND REAL VALUES MAY BE           ...\n"
+	        "     USED.  (THUS COURSE 1.5 IS HALF-     5 ---*--- 1\n"
+	        "     WAY BETWEEN 1 AND 2                      ...\n"
+	        "                                             . . .\n"
+	        "     VALUES MAY APPROACH 9.0, WHICH         6  7  8\n"
+	        "     ITSELF IS EQUIVALENT TO 1.0\n"
+	        "                                            COURSE\n"
+	        "     ONE WARP FACTOR IS THE SIZE OF \n"
+	        "     ONE QUADTANT.  THEREFORE, TO GET\n"
+	        "     FROM QUADRANT 6,5 TO 5,5, YOU WOULD\n"
+	        "     USE COURSE 3, WARP FACTOR 1.\n"
+	        "\n";
+	linefeeds(23 - 18);
+	cout << "-PRESS ENTER TO CONTINUE-";
+	cin.get(); cin.sync();
+
+	cout << "\\SRS\\ COMMAND = SHORT RANGE SENSOR SCAN\n"
+	        "     SHOWS YOU A SCAN OF YOUR PRESENT QUADRANT.\n"
+	        "\n"
+	        "     SYMBOLOGY ON YOUR SENSOR SCREEN IS AS FOLLOWS:\n"
+	        "        <*> = YOUR STARSHIP'S POSITION\n"
+	        "        +K+ = KLINGON BATTLE CRUISER\n"
+	        "        >!< = FEDERATION STARBASE (REFUEL/REPAIR/RE-ARM HERE!)\n"
+	        "         *  = STAR\n"
+	        "\n"
+	        "     A CONDENSED 'STATUS REPORT' WILL ALSO BE PRESENTED.\n"
+	        "\n"
+	        "\\LRS\\ COMMAND = LONG RANGE SENSOR SCAN\n"
+	        "     SHOWS CONDITIONS IN SPACE FOR ONE QUADRANT ON EACH SIDE\n"
+	        "     OF THE ENTERPRISE (WHICH IS IN THE MIDDLE OF THE SCAN)\n"
+	        "     THE SCAN IS CODED IN THE FORM \\###\\, WHERE TH UNITS DIGIT\n"
+	        "     IS THE NUMBER OF STARS, THE TENS DIGIT IS THE NUMBER OF\n"
+	        "     STARBASES, AND THE HUNDRESDS DIGIT IS THE NUMBER OF\n"
+	        "     KLINGONS.\n"
+	        "\n"
+	        "     EXAMPLE - 207 = 2 KLINGONS, NO STARBASES, & 7 STARS.\n"
+	        "\n";
+	linefeeds(23 - 21);
+	cout << "-PRESS ENTER TO CONTINUE-";
+	cin.get(); cin.sync();
+
+	cout << "\\PHA\\ COMMAND = PHASER CONTROL.\n"
+	        "     ALLOWS YOU TO DESTROY THE KLINGON BATTLE CRUISERS BY \n"
+	        "     ZAPPING THEM WITH SUITABLY LARGE UNITS OF ENERGY TO\n"
+	        "     DEPLETE THEIR SHIELD POWER.  (REMBER, KLINGONS HAVE\n"
+	        "     PHASERS TOO!)\n"
+	        "\n"
+	        "\\TOR\\ COMMAND = PHOTON TORPEDO CONTROL\n"
+	        "     TORPEDO COURSE IS THE SAME AS USED IN WARP ENGINE CONTROL\n"
+	        "     IF YOU HIT THE KLINGON VESSEL, HE IS DESTROYED AND\n"
+	        "     CANNOT FIRE BACK AT YOU.  IF YOU MISS, YOU ARE SUBJECT TO\n"
+	        "     HIS PHASER FIRE.  IN EITHER CASE, YOU ARE ALSO SUBJECT TO \n"
+	        "     THE PHASER FIRE OF ALL OTHER KLINGONS IN THE QUADRANT.\n"
+	        "\n"
+	        "     THE LIBRARY-COMPUTER (\\COM\\ COMMAND) HAS AN OPTION TO \n"
+	        "     COMPUTE TORPEDO TRAJECTORY FOR YOU (OPTION 2)\n"
+	        "\n";
+	linefeeds(23 - 16);
+	cout << "-PRESS ENTER TO CONTINUE-";
+	cin.get(); cin.sync();
+
+	cout << "\\SHE\\ COMMAND = SHIELD CONTROL\n"
+	        "     DEFINES THE NUMBER OF ENERGY UNITS TO BE ASSIGNED TO THE\n"
+	        "     SHIELDS.  ENERGY IS TAKEN FROM TOTAL SHIP'S ENERGY.  NOTE\n"
+	        "     THAN THE STATUS DISPLAY TOTAL ENERGY INCLUDES SHIELD ENERGY\n"
+	        "\n"
+	        "\\DAM\\ COMMAND = DAMMAGE CONTROL REPORT\n"
+	        "     GIVES THE STATE OF REPAIR OF ALL DEVICES.  WHERE A NEGATIVE\n"
+	        "     'STATE OF REPAIR' SHOWS THAT THE DEVICE IS TEMPORARILY\n"
+	        "     DAMAGED.\n"
+	        "\n";
+	linefeeds(23 - 10);
+	cout << "-PRESS ENTER TO CONTINUE-";
+	cin.get(); cin.sync();
+
+	cout << "\\COM\\ COMMAND = LIBRARY-COMPUTER\n"
+	        "     THE LIBRARY-COMPUTER CONTAINS SIX OPTIONS:\n"
+	        "     OPTION 0 = CUMULATIVE GALACTIC RECORD\n"
+	        "        THIS OPTION SHOWES COMPUTER MEMORY OF THE RESULTS OF ALL\n"
+	        "        PREVIOUS SHORT AND LONG RANGE SENSOR SCANS\n"
+	        "     OPTION 1 = STATUS REPORT\n"
+	        "        THIS OPTION SHOWS THE NUMBER OF KLINGONS, STARDATES,\n"
+	        "        AND STARBASES REMAINING IN THE GAME.\n"
+	        "     OPTION 2 = PHOTON TORPEDO DATA\n"
+	        "        WHICH GIVES DIRECTIONS AND DISTANCE FROM THE ENTERPRISE\n"
+	        "        TO ALL KLINGONS IN YOUR QUADRANT\n"
+	        "     OPTION 3 = STARBASE NAV DATA\n"
+	        "        THIS OPTION GIVES DIRECTION AND DISTANCE TO ANY \n"
+	        "        STARBASE WITHIN YOUR QUADRANT\n"
+	        "     OPTION 4 = DIRECTION/DISTANCE CALCULATOR\n"
+	        "        THIS OPTION ALLOWS YOU TO ENTER COORDINATES FOR\n"
+	        "        DIRECTION/DISTANCE CALCULATIONS\n"
+	        "     OPTION 5 = GALACTIC /REGION NAME/ MAP\n"
+	        "        THIS OPTION PRINTS THE NAMES OF THE SIXTEEN MAJOR \n"
+	        "        GALACTIC REGIONS REFERRED TO IN THE GAME.\n";
+	linefeeds(23 - 20);
+	cout << "-PRESS ENTER TO CONTINUE-";
+	cin.get(); cin.sync();
+}
 
 int main(int argc, char *argv[])
 {
@@ -260,15 +416,18 @@ int main(int argc, char *argv[])
 	// *** SOME LINES ARE LONGER THAN 72 CHARACTERS; THIS WAS DONE
 	// *** BY USING "?" INSTEAD OF "PRINT" WHEN ENTERING LINES
 	// ***
+
+	instructions();
+
 	while(1) {
-		cout << "\n\n\n\n\n\n\n\n\n\n\n";
-		cout << "                                    ,------*------,\n";
-		cout << "                    ,-------------   '---  ------'\n";
-		cout << "                     '-------- --'      / /\n";
-		cout << "                         ,---' '-------/ /--,\n";
-		cout << "                          '----------------'\n\n";
-		cout << "                    THE USS ENTERPRISE --- NCC-1701\n";
-		cout << "\n\n\n\n\n";
+		cout << "\n\n\n\n\n\n\n\n\n\n\n"
+		        "                                    ,------*------,\n"
+		        "                    ,-------------   '---  ------'\n"
+		        "                     '-------- --'      / /\n"
+		        "                         ,---' '-------/ /--,\n"
+		        "                          '----------------'\n\n"
+		        "                    THE USS ENTERPRISE --- NCC-1701\n"
+		        "\n\n\n\n\n";
 
 		new_galaxy();
 		new_quadrant();
@@ -342,15 +501,14 @@ void new_galaxy()
 		s_X0 = " ARE ";
 	}
 
-	cout << "YOUR ORDERS ARE AS FOLLOWS:\n";
-	cout << "     DESTROY THE " << K9 << " KLINGON WARSHIPS WHICH HAVE INVADED\n";
-	cout << "   THE GALAXY BEFORE THEY CAN ATTACK FEDERATION HEADQUARTERS\n";
-	cout << "   ON STARDATE " << T0 + T9 << "   THIS GIVES YOU " << T9 << " DAYS.  THERE" << s_X0 << "\n";
-	cout << "   " << B9 << " STARBASE" << s_X << " IN THE GALAXY FOR RESUPPLYING YOUR SHIP\n";
-	cout << "\n";
-	// PRINT"HIT ANY KEY EXCEPT RETURN WHEN READY TO ACCEPT COMMAND"
+	cout << "YOUR ORDERS ARE AS FOLLOWS:\n"
+	        "     DESTROY THE " << K9 << " KLINGON WARSHIPS WHICH HAVE INVADED\n"
+	        "   THE GALAXY BEFORE THEY CAN ATTACK FEDERATION HEADQUARTERS\n"
+	        "   ON STARDATE " << T0 + T9 << "   THIS GIVES YOU " << T9 << " DAYS.  THERE" << s_X0 << "\n"
+	        "   " << B9 << " STARBASE" << s_X << " IN THE GALAXY FOR RESUPPLYING YOUR SHIP\n"
+	        "\nHIT ENTER WHEN READY TO ACCEPT COMMAND";
 	I = b_RND(1);
-	// IF INP(1)=13 THEN 1300
+	cin.get(); cin.sync();
 }
 
 
@@ -370,8 +528,8 @@ void new_quadrant()
 
 		cout << "\n";
 		if (T0 == T) {
-			cout << "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n";
-			cout << "IN THE GALACTIC QUADRANT, '" << s_G2 << "'.\n";
+			cout << "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n"
+			        "IN THE GALACTIC QUADRANT, '" << s_G2 << "'.\n";
 		} else {
 			cout << "NOW ENTERING " << s_G2 << " QUADRANT . . .\n";
 		}
@@ -455,16 +613,16 @@ void main_loop()
 		else if (I == 8) library_computer();
 		else if (I == 9) ret = RG_GAME_END_RESIGN;
 		else {
-			cout << "ENTER ONE OF THE FOLLOWING:\n";
-			cout << "  NAV  (TO SET COURSE)\n";
-			cout << "  SRS  (FOR SHORT RANGE SENSOR SCAN)\n";
-			cout << "  LRS  (FOR LONG RANGE SENSOR SCAN)\n";
-			cout << "  PHA  (TO FIRE PHASERS)\n";
-			cout << "  TOR  (TO FIRE PHOTON TORPEDOES)\n";
-			cout << "  SHE  (TO RAISE OR LOWER SHIELDS)\n";
-			cout << "  DAM  (FOR DAMAGE CONTROL REPORTS)\n";
-			cout << "  COM  (TO CALL ON LIBRARY-COMPUTER)\n";
-			cout << "  XXX  (TO RESIGN YOUR COMMAND)\n\n";
+			cout << "ENTER ONE OF THE FOLLOWING:\n"
+			        "  NAV  (TO SET COURSE)\n"
+			        "  SRS  (FOR SHORT RANGE SENSOR SCAN)\n"
+			        "  LRS  (FOR LONG RANGE SENSOR SCAN)\n"
+			        "  PHA  (TO FIRE PHASERS)\n"
+			        "  TOR  (TO FIRE PHOTON TORPEDOES)\n"
+			        "  SHE  (TO RAISE OR LOWER SHIELDS)\n"
+			        "  DAM  (FOR DAMAGE CONTROL REPORTS)\n"
+			        "  COM  (TO CALL ON LIBRARY-COMPUTER)\n"
+			        "  XXX  (TO RESIGN YOUR COMMAND)\n\n";
 			continue;
 		}
 
@@ -519,20 +677,20 @@ rg_t course_control()
 
 	if (W1 <= 0 || W1 > 8) {
 		if (W1 != 0) {
-			cout << "   CHIEF ENGINEER SCOTT REPORTS 'THE ENGINES WON'T TAKE";
-			cout << " WARP  " << W1 << " !'\n";
+			cout << "   CHIEF ENGINEER SCOTT REPORTS 'THE ENGINES WON'T TAKE"
+			        " WARP  " << W1 << " !'\n";
 		}
 		return RG_MAIN_LOOP;
 	}
 
 	N = (int)(W1 * 8 + 0.5);
 	if (E - N < 0) {
-		cout << "ENGINEERING REPORTS   'INSUFFICIENT ENERGY AVAILABLE\n";
-		cout << "                       FOR MANEUVERING AT WARP " << W1 << " !'\n";
+		cout << "ENGINEERING REPORTS   'INSUFFICIENT ENERGY AVAILABLE\n"
+		        "                       FOR MANEUVERING AT WARP " << W1 << " !'\n";
 
 		if (S >= N - E && D[7] >= 0) {
-			cout << "DEFLECTOR CONTROL ROOM ACKNOWLEDGES " << S << " UNITS OF ENERGY\n";
-			cout << "                         PRESENTLY DEPLOYED TO SHIELDS.\n";
+			cout << "DEFLECTOR CONTROL ROOM ACKNOWLEDGES " << S << " UNITS OF ENERGY\n"
+			        "                         PRESENTLY DEPLOYED TO SHIELDS.\n";
 		}
 
 		return RG_MAIN_LOOP;
@@ -572,8 +730,7 @@ rg_t course_control()
 			D1 = true;
 			cout << "DAMAGE CONTROL REPORT:  ";
 		}
-		cout << b_SPC(8);
-		cout << get_device_name(I) << " REPAIR COMPLETED.\n";
+		cout << b_SPC(8) << get_device_name(I) << " REPAIR COMPLETED.\n";
 	}
 
 	if (b_RND(1) <= 0.2) {
@@ -608,8 +765,8 @@ rg_t course_control()
 
 		if (b_MID(s_Q, S8, 2) != "  ") {
 			S1 -= X1; S2 -= X2;
-			cout << "WARP ENGINES SHUT DOWN AT ";
-			cout << "SECTOR " << S1 << " , " << S2 << " DUE TO BAD NAVAGATION\n";
+			cout << "WARP ENGINES SHUT DOWN AT "
+			        "SECTOR " << S1 << " , " << S2 << " DUE TO BAD NAVAGATION\n";
 			break;
 		}
 	}
@@ -678,11 +835,11 @@ rg_t exceeded_quadrant_limits(int N, double X, double Y, double X1, double X2)
 	}
 
 	if (X5) {
-		cout << "LT. UHURA REPORTS MESSAGE FROM STARFLEET COMMAND:\n";
-		cout << "  'PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER\n";
-		cout << "  IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.'\n";
-		cout << "CHIEF ENGINEER SCOTT REPORTS  'WARP ENGINES SHUT DOWN\n";
-		cout << "  AT SECTOR " << S1 << " , " << S2 << " OF QUADRANT " << Q1 << " , " << Q2 << " .'\n";
+		cout << "LT. UHURA REPORTS MESSAGE FROM STARFLEET COMMAND:\n"
+		        "  'PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER\n"
+		        "  IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.'\n"
+		        "CHIEF ENGINEER SCOTT REPORTS  'WARP ENGINES SHUT DOWN\n"
+		        "  AT SECTOR " << S1 << " , " << S2 << " OF QUADRANT " << Q1 << " , " << Q2 << " .'\n";
 		if (T > T0 + T9)
 			return RG_GAME_END_TIME;
 	}
@@ -741,15 +898,14 @@ void long_range_sensors()
 				cout << "*** ";
 			}
 		}
-		cout << ":\n";
-		cout << s_O1 << "\n";
+		cout << ":\n" << s_O1 << "\n";
 	}
 }
 
 void no_enemy_ships()
 {
-	cout << "SCIENCE OFFICER SPOCK REPORTS  'SENSORS SHOW NO ENEMY SHIPS\n";
-	cout << "                                IN THIS QUADRANT'\n";
+	cout << "SCIENCE OFFICER SPOCK REPORTS  'SENSORS SHOW NO ENEMY SHIPS\n"
+	        "                                IN THIS QUADRANT'\n";
 }
 
 
@@ -777,8 +933,8 @@ rg_t phaser_control()
 	cout << "PHASERS LOCKED ON TARGET;  ";
 
 	do {
-		cout << "ENERGY AVAILABLE = " << E << " UNITS\n";
-		cout << "NUMBER OF UNITS TO FIRE? ";
+		cout << "ENERGY AVAILABLE = " << E << " UNITS\n"
+		        "NUMBER OF UNITS TO FIRE? ";
 		b_INPUT(X);
 
 		if (X <= 0)
@@ -804,8 +960,8 @@ rg_t phaser_control()
 		}
 
 		K[I][3] -= H;
-		cout << " " << H << " UNIT HIT ON KLINGON AT SECTOR " << K[I][1] << " ,";
-		cout << " " << K[I][2] << "\n";
+		cout << " " << H << " UNIT HIT ON KLINGON AT SECTOR " << K[I][1] << " ,"
+		        " " << K[I][2] << "\n";
 
 		if (K[I][3] > 0) {
 			cout << "   (SENSORS SHOW " << K[I][3] << " UNITS REMAINING)\n";
@@ -915,8 +1071,8 @@ rg_t photon_torpedo()
 			if (B9 <= 0 && K9 <= T - T0 - T9)
 				return RG_GAME_END_TORPEDOED_STARBASE;
 
-			cout << "STARFLEET COMMAND REVIEWING YOUR RECORD TO CONSIDER\n";
-			cout << "COURT MARTIAL!\n";
+			cout << "STARFLEET COMMAND REVIEWING YOUR RECORD TO CONSIDER\n"
+			        "COURT MARTIAL!\n";
 			D0 = false;
 		} else {
 			// if you blew up something that isn't a klingon, star, or starbase, you get to fire again?
@@ -945,8 +1101,8 @@ void shield_control()
 		return;
 	}
 
-	cout << "ENERGY AVAILABLE = " << E + S << " ";
-	cout << "NUMBER OF UNITS TO SHIELDS? ";
+	cout << "ENERGY AVAILABLE = " << E + S << " "
+	        "NUMBER OF UNITS TO SHIELDS? ";
 	b_INPUT(X);
 
 	if (X < 0 || S == X) {
@@ -955,16 +1111,16 @@ void shield_control()
 	}
 
 	if (X > E + S) {
-		cout << "SHIELD CONTROL REPORTS  'THIS IS NOT THE FEDERATION TREASURY.'\n";
-		cout << "<SHIELDS UNCHANGED>\n";
+		cout << "SHIELD CONTROL REPORTS  'THIS IS NOT THE FEDERATION TREASURY.'\n"
+		        "<SHIELDS UNCHANGED>\n";
 		return;
 	}
 
 	E += S - X;
 	S = X;
 
-	cout << "DEFLECTOR CONTROL ROOM REPORT:\n";
-	cout << "  'SHIELDS NOW AT " << (int)(S) << " UNITS PER YOUR COMMAND.'\n";
+	cout << "DEFLECTOR CONTROL ROOM REPORT:\n"
+	        "  'SHIELDS NOW AT " << (int)(S) << " UNITS PER YOUR COMMAND.'\n";
 }
 
 
@@ -989,9 +1145,9 @@ rg_t starbase_repair()
 	if (D3 >= 1)
 		D3 = 0.9;
 
-	cout << "TECHNICIANS STANDING BY TO EFFECT REPAIRS TO YOUR SHIP;\n";
-	cout << "ESTIMATED TIME TO REPAIR: " << 0.01 * (int)(100 * D3) << " STARDATES\n";
-	cout << "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)? ";
+	cout << "TECHNICIANS STANDING BY TO EFFECT REPAIRS TO YOUR SHIP;\n"
+	        "ESTIMATED TIME TO REPAIR: " << 0.01 * (int)(100 * D3) << " STARDATES\n"
+	        "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)? ";
 	b_INPUT(s_A);
 
 	if (s_A != "Y")
@@ -1008,8 +1164,8 @@ rg_t starbase_repair()
 
 void damage_report()
 {
-	cout << "\n";
-	cout << "DEVICE             STATE OF REPAIR\n";
+	cout << "\n"
+	        "DEVICE             STATE OF REPAIR\n";
 
 	for (R1 = 1; R1 <= 8; R1++) {
 		string s_G2 = get_device_name(R1);
@@ -1096,18 +1252,18 @@ void end_of_game(rg_t end_type)
 	switch (end_type)
 	{
 		case RG_GAME_END_NO_ENERGY:
-			cout << "\n";
-			cout << "** FATAL ERROR **   YOU'VE JUST STRANDED YOUR SHIP IN \n";
-			cout << "SPACE\n";
-			cout << "YOU HAVE INSUFFICIENT MANEUVERING ENERGY,";
-			cout << " AND SHIELD CONTROL\n";
-			cout << "IS PRESENTLY INCAPABLE OF CROSS";
-			cout << "-CIRCUITING TO ENGINE ROOM!!\n";
+			cout << "\n"
+			        "** FATAL ERROR **   YOU'VE JUST STRANDED YOUR SHIP IN \n"
+			        "SPACE\n"
+			        "YOU HAVE INSUFFICIENT MANEUVERING ENERGY,"
+			        " AND SHIELD CONTROL\n"
+			        "IS PRESENTLY INCAPABLE OF CROSS"
+			        "-CIRCUITING TO ENGINE ROOM!!\n";
 			break;
 
 		case RG_GAME_END_TORPEDOED_STARBASE:
-			cout << "THAT DOES IT, CAPTAIN!!  YOU ARE HEREBY RELIEVED OF COMMAND\n";
-			cout << "AND SENTENCED TO 99 STARDATES AT HARD LABOR ON CYGNUS 12!!\n";
+			cout << "THAT DOES IT, CAPTAIN!!  YOU ARE HEREBY RELIEVED OF COMMAND\n"
+			        "AND SENTENCED TO 99 STARDATES AT HARD LABOR ON CYGNUS 12!!\n";
 
 		default:
 			break;
@@ -1116,15 +1272,15 @@ void end_of_game(rg_t end_type)
 	switch(end_type)
 	{
 		case RG_GAME_END_NO_KLINGONS:
-			cout << "CONGRULATION, CAPTAIN!  THEN LAST KLINGON BATTLE CRUISER\n";
-			cout << "MENACING THE FDERATION HAS BEEN DESTROYED.\n\n";
-			cout << "YOUR EFFICIENCY RATING IS " << 1000 * (K7 / (T - T0)) * (K7 / (T - T0)) << "\n";
+			cout << "CONGRULATION, CAPTAIN!  THEN LAST KLINGON BATTLE CRUISER\n"
+			        "MENACING THE FDERATION HAS BEEN DESTROYED.\n\n"
+			        "YOUR EFFICIENCY RATING IS " << 1000 * (K7 / (T - T0)) * (K7 / (T - T0)) << "\n";
 			break;
 
 		case RG_GAME_END_ENTERPRISE_DESTROYED:
-			cout << "\n";
-			cout << "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION ";
-			cout << "WILL BE CONQUERED\n";
+			cout << "\n"
+			        "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION "
+			        "WILL BE CONQUERED\n";
 
 		case RG_GAME_END_TIME:
 		case RG_GAME_END_NO_ENERGY:
@@ -1132,8 +1288,8 @@ void end_of_game(rg_t end_type)
 
 		case RG_GAME_END_RESIGN:
 		case RG_GAME_END_TORPEDOED_STARBASE:
-			cout << "THERE WERE " << K9 << " KLINGON BATTLE CRUISERS LEFT AT\n";
-			cout << "THE END OF YOUR MISSION.\n";
+			cout << "THERE WERE " << K9 << " KLINGON BATTLE CRUISERS LEFT AT\n"
+			        "THE END OF YOUR MISSION.\n";
 
 		default:
 			break;
@@ -1143,9 +1299,9 @@ void end_of_game(rg_t end_type)
 
 	if (B9 > 0) {
 		string s_A;
-		cout << "THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER\n";
-		cout << "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,\n";
-		cout << "LET HIM STEP FORWARD AND ENTER 'AYE'? ";
+		cout << "THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER\n"
+		        "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,\n"
+		        "LET HIM STEP FORWARD AND ENTER 'AYE'? ";
 		b_INPUT(s_A);
 
 		if (s_A == "AYE")
@@ -1196,8 +1352,7 @@ void short_range_sensors_dock()
 	}
 
 	if (D[2] < 0) {
-		cout << "\n";
-		cout << "*** SHORT RANGE SENSORS ARE OUT ***\n\n";
+		cout << "\n*** SHORT RANGE SENSORS ARE OUT ***\n\n";
 		return;
 	}
 
@@ -1247,13 +1402,13 @@ void library_computer()
 		else if (A == 4) dir_calc(DIR_CALC_INPUT);
 		else if (A == 5) galaxy_map(GALAXY_MAP_NAMES);
 		else {
-			cout << "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n";
-			cout << "   0 = CUMULATIVE GALACTIC RECORD\n";
-			cout << "   1 = STATUS REPORT\n";
-			cout << "   2 = PHOTON TORPEDO DATA\n";
-			cout << "   3 = STARBASE NAV DATA\n";
-			cout << "   4 = DIRECTION/DISTANCE CALCULATOR\n";
-			cout << "   5 = GALAXY 'REGION NAME' MAP\n\n";
+			cout << "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n"
+			        "   0 = CUMULATIVE GALACTIC RECORD\n"
+			        "   1 = STATUS REPORT\n"
+			        "   2 = PHOTON TORPEDO DATA\n"
+			        "   3 = STARBASE NAV DATA\n"
+			        "   4 = DIRECTION/DISTANCE CALCULATOR\n"
+			        "   5 = GALAXY 'REGION NAME' MAP\n\n";
 			continue;
 		}
 		break;
@@ -1275,10 +1430,10 @@ void galaxy_map(gm_t map_type)
 		// CUM GALACTIC RECORD
 		// INPUT"DO YOU WANT A HARDCOPY? IS THE TTY ON (Y/N)";A$
 		// IFA$="Y"THENPOKE1229,2:POKE1237,3:NULL1
-		cout << "\n";
-		cout << "        ";
-		cout << "COMPUTER RECORD OF GALAXY FOR QUADRANT " << Q1 << " , " << Q2 << "\n";
-		cout << "\n";
+		cout << "\n"
+		        "        "
+		        "COMPUTER RECORD OF GALAXY FOR QUADRANT " << Q1 << " , " << Q2 << "\n"
+		        "\n";
 	}
 
 	cout << "       1     2     3     4     5     6     7     8\n";
@@ -1308,8 +1463,7 @@ void galaxy_map(gm_t map_type)
 			J0 = (int)(12 - 0.5 * b_LEN(s_G2));
 			cout << b_SPC(J0) << s_G2;
 		}
-		cout << "\n";
-		cout << s_O1 << "\n";
+		cout << "\n" << s_O1 << "\n";
 	}
 	cout << "\n";
 }
@@ -1323,12 +1477,12 @@ void status_report()
 	cout << "   STATUS REPORT:\n";
 
 	s_X = (K9 > 1) ? "S" : "";
-	cout << "KLINGON" << s_X << " LEFT:  " << K9 << "\n";
-	cout << "MISSION MUST BE COMPLETED IN " << 0.1 * (int)((T0 + T9 - T) * 10) << " STARDATES\n";
+	cout << "KLINGON" << s_X << " LEFT:  " << K9 << "\n"
+	        "MISSION MUST BE COMPLETED IN " << 0.1 * (int)((T0 + T9 - T) * 10) << " STARDATES\n";
 
 	if (B9 < 1) {
-		cout << "YOUR STUPIDITY HAS LEFT YOU ON YOUR ON IN\n";
-		cout << "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!\n";
+		cout << "YOUR STUPIDITY HAS LEFT YOU ON YOUR ON IN\n"
+		        "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!\n";
 		damage_control();
 		return;
 	}
@@ -1348,8 +1502,8 @@ void actual_dir_calc(double C1, double A, double W1, double X)
 	W1 /= abs(X) > abs(A) ? abs(X) : abs(A);
 	C1 += ((X > 0) == (A > 0)) ? W1 : -W1;
 
-	cout << "DIRECTION = " << C1 << "\n";
-	cout << "DISTANCE = " << sqrt(X * X + A * A) << "\n";
+	cout << "DIRECTION = " << C1 << "\n"
+	        "DISTANCE = " << sqrt(X * X + A * A) << "\n";
 }
 
 
@@ -1377,8 +1531,8 @@ void dir_calc(dc_t calc_type)
 		}
 	} else if (calc_type == DIR_CALC_STARBASE) {
 		if (B3 == 0) {
-			cout << "MR. SPOCK REPORTS,  'SENSORS SHOW NO STARBASES IN THIS";
-			cout << " QUADRANT.'\n";
+			cout << "MR. SPOCK REPORTS,  'SENSORS SHOW NO STARBASES IN THIS"
+			        " QUADRANT.'\n";
 			return;
 		}
 
@@ -1390,10 +1544,10 @@ void dir_calc(dc_t calc_type)
 		       W1, // final X coord
 		       X;  // final Y coord
 
-		cout << "DIRECTION/DISTANCE CALCULATOR:\n";
-		cout << "YOU ARE AT QUADRANT  " << Q1 << " , " << Q2 << "  SECTOR  " << S1 << " , " << S2 << "\n";
-		cout << "PLEASE ENTER\n";
-		cout << "  INITIAL COORDINATES (X,Y)? ";
+		cout << "DIRECTION/DISTANCE CALCULATOR:\n"
+		        "YOU ARE AT QUADRANT  " << Q1 << " , " << Q2 << "  SECTOR  " << S1 << " , " << S2 << "\n"
+		        "PLEASE ENTER\n"
+		        "  INITIAL COORDINATES (X,Y)? ";
 		b_INPUT(C1, A);
 		cout << "  FINAL COORDINATES (X,Y)? ";
 		b_INPUT(W1, X);
