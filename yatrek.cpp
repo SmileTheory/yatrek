@@ -1,11 +1,21 @@
-#include <iostream>
-#include <sstream>
-#include <string>
+#ifdef __cplusplus
+#include <cstdio>
 #include <cmath>
 #include <ctime>
 #include <cctype>
-
-using namespace std;
+#include <cstring>
+#include <cstdint>
+#include <cstdlib>
+#else
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // below from "A small noncryptographic PRNG"
@@ -44,55 +54,53 @@ float b_RND(double R)
 	return (ranval(&rstate) >> 8) * (1. / (1 << 24));
 }
 
-const string b_LEFT(const string& s, int len)
+const char *b_SPC(int len)
 {
-	return s.substr(0, len);
+	const char *space = "                                                                                ";
+
+	if (len > 80 || len < 0)
+		return NULL;
+
+	return space + 80 - len;
 }
 
-const string b_MID(const string& s, int pos, int len)
+void b_INPUT_1(double *num)
 {
-	return s.substr(pos - 1, len);
+	char s[80];
+	fflush(stdout);
+	fgets(s, sizeof(s), stdin);
+	s[79] = '\0';
+	sscanf(s, "%lf", num);
 }
 
-const string b_RIGHT(const string& s, int len)
+void b_INPUT_2(double *num1, double *num2)
 {
-	return s.substr(s.length() - len, len);
+	char s[80];
+	fflush(stdout);
+	fgets(s, sizeof(s), stdin);
+	s[79] = '\0';
+	sscanf(s, "%lf,%lf", num1, num2);
 }
 
-int b_LEN(const string& s)
+void b_INPUT_S(char *out, int size)
 {
-	return s.length();
-}
+	char s[80];
+	int i;
 
-const string b_SPC(int len)
-{
-	return string(len, ' ');
-}
+	fflush(stdout);
+	fgets(s, 80, stdin);
+	s[79] = '\0';
 
-string b_STR(int num)
-{
-	return to_string(num);
-}
-
-void b_INPUT(double& num)
-{
-	string s;
-	getline(cin, s);
-	stringstream(s) >> num;
-}
-
-void b_INPUT(double& num1, double& num2)
-{
-	string s;
-	getline(cin, s);
-	stringstream(s) >> num1 >> num2;
-}
-
-void b_INPUT(string& s)
-{
-	getline(cin, s);
-	for (auto& c: s)
-		c = toupper(c);
+	for (i = 0; i < size; i++)
+	{
+		if (s[i] == '\n') {
+			out[i] = '\0';
+			break;
+		} else if (s[i] == '\0')
+			break;
+		out[i] = s[i];
+	}
+	out[size - 1]  = '\0';
 }
 
 /*
@@ -175,7 +183,7 @@ bool D0; // flag - docked
 // list of commands
 const char *s_A1 = "NAVSRSLRSPHATORSHEDAMCOMXXX";
 
-string s_Q;  // quadrant string
+char s_Q[192];  // quadrant string
 
 double b_FND(int I)
 {
@@ -229,38 +237,39 @@ void status_report();
 void dir_calc(dc_t calc_type);
 void get_empty_sector();
 void set_sector(double Z1, double Z2, const char *s_A);
-string get_device_name(int R1);
+const char *get_device_name(int R1);
 bool is_sector(double Z1, double Z2, const char *s_A);
-string get_quadrant_name(int Z4, int Z5, bool G5);
+const char *get_quadrant_name(int Z4, int Z5);
+const char *get_quadrant_number(int Z5);
 
 void linefeeds(int num)
 {
 	while (num--)
-		cout << endl;
+		printf("\n");
 }
 
 void instructions()
 {
-	string s_K;
+	char s_K[2];
 
 	linefeeds(12);
-	cout << b_SPC(10) << "*************************************\n"
-	     << b_SPC(10) << "*                                   *\n"
-	     << b_SPC(10) << "*                                   *\n"
-	     << b_SPC(10) << "*      * * SUPER STAR TREK * *      *\n"
-	     << b_SPC(10) << "*                                   *\n"
-	     << b_SPC(10) << "*                                   *\n"
-	     << b_SPC(10) << "*************************************\n";
+	printf("%s*************************************\n", b_SPC(10));
+	printf("%s*                                   *\n", b_SPC(10));
+	printf("%s*                                   *\n", b_SPC(10));
+	printf("%s*      * * SUPER STAR TREK * *      *\n", b_SPC(10));
+	printf("%s*                                   *\n", b_SPC(10));
+	printf("%s*                                   *\n", b_SPC(10));
+	printf("%s*************************************\n", b_SPC(10));
 	linefeeds(8);
 
-	cout << "DO YOU NEED INSTRUCTIONS (Y/N)? ";
-	b_INPUT(s_K);
+	printf("DO YOU NEED INSTRUCTIONS (Y/N)? ");
+	b_INPUT_S(s_K, 2);
 
-	if (s_K=="N")
+	if (stricmp(s_K, "N") == 0)
 		return;
 
-	cout << "\n";
-	cout << "      INSTRUCTIONS FOR 'SUPER STAR TREK'\n"
+	printf( "\n"
+	        "      INSTRUCTIONS FOR 'SUPER STAR TREK'\n"
 	        "\n"
 	        "1. WHEN YOU SEE \\COMMAND ?\\ PRINTED, ENTER ONE OF THE LEGAL\n"
 	        "     COMMANDS (NAV,SRS,LRS,PHA,TOR,SHE,DAM,COM, OR XXX).\n"
@@ -279,12 +288,12 @@ void instructions()
 	        "\\ENTERPRISE\\; YOUR MISSION: TO SEEK AND DESTROY THE FLEET OF\n"
 	        "KLINGON WARWHIPS WHICH ARE MENACING THE UNITED FEDERATION OF\n"
 	        "PLANETS.\n"
-	        "\n";
+	        "\n");
 	linefeeds(23 - 20);
-	cout << "-PRESS ENTER TO CONTINUE-";
-	cin.get(); cin.sync();
+	printf("-PRESS ENTER TO CONTINUE-");
+	b_INPUT_S(s_K, 2);
 
-	cout << "     YOU HAVE THE FOLLOWING COMMANDS AVAILABLE TO YOU AS CAPTAIN\n"
+	printf( "     YOU HAVE THE FOLLOWING COMMANDS AVAILABLE TO YOU AS CAPTAIN\n"
 	        "OF THE STARSHIP ENTERPRISE:\n"
 	        "\n"
 	        "\\NAV\\ COMMAND = WARP ENGINE CONTROL --\n"
@@ -301,12 +310,12 @@ void instructions()
 	        "     ONE QUADTANT.  THEREFORE, TO GET\n"
 	        "     FROM QUADRANT 6,5 TO 5,5, YOU WOULD\n"
 	        "     USE COURSE 3, WARP FACTOR 1.\n"
-	        "\n";
+	        "\n");
 	linefeeds(23 - 18);
-	cout << "-PRESS ENTER TO CONTINUE-";
-	cin.get(); cin.sync();
+	printf("-PRESS ENTER TO CONTINUE-");
+	b_INPUT_S(s_K, 2);
 
-	cout << "\\SRS\\ COMMAND = SHORT RANGE SENSOR SCAN\n"
+	printf( "\\SRS\\ COMMAND = SHORT RANGE SENSOR SCAN\n"
 	        "     SHOWS YOU A SCAN OF YOUR PRESENT QUADRANT.\n"
 	        "\n"
 	        "     SYMBOLOGY ON YOUR SENSOR SCREEN IS AS FOLLOWS:\n"
@@ -326,12 +335,12 @@ void instructions()
 	        "     KLINGONS.\n"
 	        "\n"
 	        "     EXAMPLE - 207 = 2 KLINGONS, NO STARBASES, & 7 STARS.\n"
-	        "\n";
+	        "\n");
 	linefeeds(23 - 21);
-	cout << "-PRESS ENTER TO CONTINUE-";
-	cin.get(); cin.sync();
+	printf("-PRESS ENTER TO CONTINUE-");
+	b_INPUT_S(s_K, 2);
 
-	cout << "\\PHA\\ COMMAND = PHASER CONTROL.\n"
+	printf( "\\PHA\\ COMMAND = PHASER CONTROL.\n"
 	        "     ALLOWS YOU TO DESTROY THE KLINGON BATTLE CRUISERS BY \n"
 	        "     ZAPPING THEM WITH SUITABLY LARGE UNITS OF ENERGY TO\n"
 	        "     DEPLETE THEIR SHIELD POWER.  (REMBER, KLINGONS HAVE\n"
@@ -346,12 +355,12 @@ void instructions()
 	        "\n"
 	        "     THE LIBRARY-COMPUTER (\\COM\\ COMMAND) HAS AN OPTION TO \n"
 	        "     COMPUTE TORPEDO TRAJECTORY FOR YOU (OPTION 2)\n"
-	        "\n";
+	        "\n");
 	linefeeds(23 - 16);
-	cout << "-PRESS ENTER TO CONTINUE-";
-	cin.get(); cin.sync();
+	printf("-PRESS ENTER TO CONTINUE-");
+	b_INPUT_S(s_K, 2);
 
-	cout << "\\SHE\\ COMMAND = SHIELD CONTROL\n"
+	printf( "\\SHE\\ COMMAND = SHIELD CONTROL\n"
 	        "     DEFINES THE NUMBER OF ENERGY UNITS TO BE ASSIGNED TO THE\n"
 	        "     SHIELDS.  ENERGY IS TAKEN FROM TOTAL SHIP'S ENERGY.  NOTE\n"
 	        "     THAN THE STATUS DISPLAY TOTAL ENERGY INCLUDES SHIELD ENERGY\n"
@@ -360,12 +369,12 @@ void instructions()
 	        "     GIVES THE STATE OF REPAIR OF ALL DEVICES.  WHERE A NEGATIVE\n"
 	        "     'STATE OF REPAIR' SHOWS THAT THE DEVICE IS TEMPORARILY\n"
 	        "     DAMAGED.\n"
-	        "\n";
+	        "\n");
 	linefeeds(23 - 10);
-	cout << "-PRESS ENTER TO CONTINUE-";
-	cin.get(); cin.sync();
+	printf("-PRESS ENTER TO CONTINUE-");
+	b_INPUT_S(s_K, 2);
 
-	cout << "\\COM\\ COMMAND = LIBRARY-COMPUTER\n"
+	printf( "\\COM\\ COMMAND = LIBRARY-COMPUTER\n"
 	        "     THE LIBRARY-COMPUTER CONTAINS SIX OPTIONS:\n"
 	        "     OPTION 0 = CUMULATIVE GALACTIC RECORD\n"
 	        "        THIS OPTION SHOWES COMPUTER MEMORY OF THE RESULTS OF ALL\n"
@@ -384,10 +393,10 @@ void instructions()
 	        "        DIRECTION/DISTANCE CALCULATIONS\n"
 	        "     OPTION 5 = GALACTIC /REGION NAME/ MAP\n"
 	        "        THIS OPTION PRINTS THE NAMES OF THE SIXTEEN MAJOR \n"
-	        "        GALACTIC REGIONS REFERRED TO IN THE GAME.\n";
+	        "        GALACTIC REGIONS REFERRED TO IN THE GAME.\n");
 	linefeeds(23 - 20);
-	cout << "-PRESS ENTER TO CONTINUE-";
-	cin.get(); cin.sync();
+	printf("-PRESS ENTER TO CONTINUE-");
+	b_INPUT_S(s_K, 2);
 }
 
 int main(int argc, char *argv[])
@@ -420,14 +429,14 @@ int main(int argc, char *argv[])
 	instructions();
 
 	while(1) {
-		cout << "\n\n\n\n\n\n\n\n\n\n\n"
+		printf( "\n\n\n\n\n\n\n\n\n\n\n"
 		        "                                    ,------*------,\n"
 		        "                    ,-------------   '---  ------'\n"
 		        "                     '-------- --'      / /\n"
 		        "                         ,---' '-------/ /--,\n"
 		        "                          '----------------'\n\n"
 		        "                    THE USS ENTERPRISE --- NCC-1701\n"
-		        "\n\n\n\n\n";
+		        "\n\n\n\n\n");
 
 		new_galaxy();
 		new_quadrant();
@@ -441,6 +450,7 @@ void new_galaxy()
 {
 	int I, J;
 	const char *s_X, *s_X0; // plurals
+	char s_A[3];
 
 	T = (int)(b_RND(1) * 20 + 20) * 100;
 	T0 = T;
@@ -501,14 +511,14 @@ void new_galaxy()
 		s_X0 = " ARE ";
 	}
 
-	cout << "YOUR ORDERS ARE AS FOLLOWS:\n"
-	        "     DESTROY THE " << K9 << " KLINGON WARSHIPS WHICH HAVE INVADED\n"
+	printf( "YOUR ORDERS ARE AS FOLLOWS:\n"
+	        "     DESTROY THE %d KLINGON WARSHIPS WHICH HAVE INVADED\n"
 	        "   THE GALAXY BEFORE THEY CAN ATTACK FEDERATION HEADQUARTERS\n"
-	        "   ON STARDATE " << T0 + T9 << "   THIS GIVES YOU " << T9 << " DAYS.  THERE" << s_X0 << "\n"
-	        "   " << B9 << " STARBASE" << s_X << " IN THE GALAXY FOR RESUPPLYING YOUR SHIP\n"
-	        "\nHIT ENTER WHEN READY TO ACCEPT COMMAND";
+	        "   ON STARDATE %g   THIS GIVES YOU %g DAYS.  THERE%s\n"
+	        "   %d STARBASE%s IN THE GALAXY FOR RESUPPLYING YOUR SHIP\n"
+	        "\nHIT ENTER WHEN READY TO ACCEPT COMMAND", K9, T0 + T9, T9, s_X0, B9, s_X);
 	I = b_RND(1);
-	cin.get(); cin.sync();
+	b_INPUT_S(s_A, 3);
 }
 
 
@@ -524,26 +534,27 @@ void new_quadrant()
 	Z[Q1][Q2] = G[Q1][Q2];
 
 	if (Q1 >= 1 && Q1 <= 8 && Q2 >= 1 && Q2 <= 8) {
-		string s_G2 = get_quadrant_name(Q1, Q2, false);
+		const char *s_G2_1 = get_quadrant_name(Q1, Q2);
+		const char *s_G2_2 = get_quadrant_number(Q2);
 
-		cout << "\n";
+		printf( "\n");
 		if (T0 == T) {
-			cout << "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n"
-			        "IN THE GALACTIC QUADRANT, '" << s_G2 << "'.\n";
+			printf( "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n"
+			        "IN THE GALACTIC QUADRANT, '%s%s'.\n", s_G2_1, s_G2_2);
 		} else {
-			cout << "NOW ENTERING " << s_G2 << " QUADRANT . . .\n";
+			printf( "NOW ENTERING %s%s QUADRANT . . .\n", s_G2_1, s_G2_2);
 		}
-		cout << "\n";
+		printf( "\n");
 
 		K3 = G[Q1][Q2] / 100;
 		B3 = G[Q1][Q2] / 10 % 10;
 		S3 = G[Q1][Q2] % 10;
 
 		if (K3 != 0) {
-			cout << "COMBAT AREA      CONDITION RED\n";
+			printf( "COMBAT AREA      CONDITION RED\n");
 
 			if (S <= 200)
-				cout << "   SHIELDS DANGEROUSLY LOW\n";
+				printf( "   SHIELDS DANGEROUSLY LOW\n");
 		}
 
 		for (I = 1; I <= 3; I++) {
@@ -555,7 +566,8 @@ void new_quadrant()
 		K[I][3] = 0;
 	}
 
-	s_Q = b_SPC(192);
+	for (I = 0; I < 192; I++)
+		s_Q[I] = ' ';
 
 	// POSITION ENTERPRISE IN QUADRANT, THEN PLACE "K3" KLINGONS, &
 	// "B3" STARBASES, & "S3" STARS ELSEWHERE.
@@ -584,7 +596,7 @@ void new_quadrant()
 void main_loop()
 {
 	while(1) {
-		string s_A;
+		char s_A[4];
 		int I;
 		rg_t ret;
 
@@ -593,11 +605,11 @@ void main_loop()
 			return;
 		}
 
-		cout << "COMMAND? ";
-		b_INPUT(s_A);
+		printf( "COMMAND? ");
+		b_INPUT_S(s_A, 4);
 
 		for (I = 1; I <= 9; I++) {
-			if (b_LEFT(s_A, 3) == b_MID(s_A1, 3 * I - 2, 3))
+			if (strnicmp(s_A, s_A1 + 3 * I - 3, 3) == 0)
 				break;
 		}
 
@@ -613,7 +625,7 @@ void main_loop()
 		else if (I == 8) library_computer();
 		else if (I == 9) ret = RG_GAME_END_RESIGN;
 		else {
-			cout << "ENTER ONE OF THE FOLLOWING:\n"
+			printf( "ENTER ONE OF THE FOLLOWING:\n"
 			        "  NAV  (TO SET COURSE)\n"
 			        "  SRS  (FOR SHORT RANGE SENSOR SCAN)\n"
 			        "  LRS  (FOR LONG RANGE SENSOR SCAN)\n"
@@ -622,7 +634,7 @@ void main_loop()
 			        "  SHE  (TO RAISE OR LOWER SHIELDS)\n"
 			        "  DAM  (FOR DAMAGE CONTROL REPORTS)\n"
 			        "  COM  (TO CALL ON LIBRARY-COMPUTER)\n"
-			        "  XXX  (TO RESIGN YOUR COMMAND)\n\n";
+			        "  XXX  (TO RESIGN YOUR COMMAND)\n\n");
 			continue;
 		}
 
@@ -655,42 +667,42 @@ rg_t course_control()
 
 	bool D1;   // flag - damage control report started
 
-	cout << "COURSE (0-9)? ";
-	b_INPUT(C1);
+	printf( "COURSE (0-9)? ");
+	b_INPUT_1(&C1);
 
 	if (C1 == 9)
 		C1 = 1;
 
 	if (C1 < 1 || C1 >= 9) {
-		cout << "   LT. SULU REPORTS, 'INCORRECT COURSE DATA, SIR!'\n";
+		printf( "   LT. SULU REPORTS, 'INCORRECT COURSE DATA, SIR!'\n");
 		return RG_MAIN_LOOP;
 	}
 
 	s_X = (D[1] < 0) ? "0.2" : "8";
-	cout << "WARP FACTOR (0-" << s_X << ")? ";
-	b_INPUT(W1);
+	printf( "WARP FACTOR (0-%s)? ", s_X);
+	b_INPUT_1(&W1);
 
 	if (D[1] < 0 && W1 > 0.2) {
-		cout << "WARP ENGINES ARE DAMAGED.  MAXIUM SPEED = WARP 0.2\n";
+		printf( "WARP ENGINES ARE DAMAGED.  MAXIUM SPEED = WARP 0.2\n");
 		return RG_MAIN_LOOP;
 	}
 
 	if (W1 <= 0 || W1 > 8) {
 		if (W1 != 0) {
-			cout << "   CHIEF ENGINEER SCOTT REPORTS 'THE ENGINES WON'T TAKE"
-			        " WARP  " << W1 << " !'\n";
+			printf( "   CHIEF ENGINEER SCOTT REPORTS 'THE ENGINES WON'T TAKE"
+			        " WARP  %g !'\n", W1);
 		}
 		return RG_MAIN_LOOP;
 	}
 
 	N = (int)(W1 * 8 + 0.5);
 	if (E - N < 0) {
-		cout << "ENGINEERING REPORTS   'INSUFFICIENT ENERGY AVAILABLE\n"
-		        "                       FOR MANEUVERING AT WARP " << W1 << " !'\n";
+		printf( "ENGINEERING REPORTS   'INSUFFICIENT ENERGY AVAILABLE\n"
+		        "                       FOR MANEUVERING AT WARP %g !'\n", W1);
 
 		if (S >= N - E && D[7] >= 0) {
-			cout << "DEFLECTOR CONTROL ROOM ACKNOWLEDGES " << S << " UNITS OF ENERGY\n"
-			        "                         PRESENTLY DEPLOYED TO SHIELDS.\n";
+			printf( "DEFLECTOR CONTROL ROOM ACKNOWLEDGES %g UNITS OF ENERGY\n"
+			        "                         PRESENTLY DEPLOYED TO SHIELDS.\n", S);
 		}
 
 		return RG_MAIN_LOOP;
@@ -728,21 +740,21 @@ rg_t course_control()
 
 		if (!D1) {
 			D1 = true;
-			cout << "DAMAGE CONTROL REPORT:  ";
+			printf( "DAMAGE CONTROL REPORT:  ");
 		}
-		cout << b_SPC(8) << get_device_name(I) << " REPAIR COMPLETED.\n";
+		printf("%s%s REPAIR COMPLETED.\n", b_SPC(8),get_device_name(I));
 	}
 
 	if (b_RND(1) <= 0.2) {
 		R1 = b_FNR(1);
-		cout << "DAMAGE CONTROL REPORT:  " << get_device_name(R1);
+		printf("DAMAGE CONTROL REPORT:  %s", get_device_name(R1));
 
 		if (b_RND(1) < 0.6) {
 			D[(int)(R1)] -= b_RND(1) * 5 + 1;
-			cout << " DAMAGED\n\n";
+			printf( " DAMAGED\n\n");
 		} else {
 			D[(int)(R1)] += b_RND(1) * 3 + 1;
-			cout << " STATE OF REPAIR IMPROVED\n\n";
+			printf( " STATE OF REPAIR IMPROVED\n\n");
 		}
 	}
 
@@ -763,10 +775,10 @@ rg_t course_control()
 
 		S8 = (int)(S1) * 24 + (int)(S2) * 3 - 26;
 
-		if (b_MID(s_Q, S8, 2) != "  ") {
+		if (strncmp(s_Q + S8 - 1, "  ", 2) != 0) {
 			S1 -= X1; S2 -= X2;
-			cout << "WARP ENGINES SHUT DOWN AT "
-			        "SECTOR " << S1 << " , " << S2 << " DUE TO BAD NAVAGATION\n";
+			printf( "WARP ENGINES SHUT DOWN AT "
+			        "SECTOR %g , %g DUE TO BAD NAVAGATION\n", S1, S2);
 			break;
 		}
 	}
@@ -835,11 +847,12 @@ rg_t exceeded_quadrant_limits(int N, double X, double Y, double X1, double X2)
 	}
 
 	if (X5) {
-		cout << "LT. UHURA REPORTS MESSAGE FROM STARFLEET COMMAND:\n"
+		printf( "LT. UHURA REPORTS MESSAGE FROM STARFLEET COMMAND:\n"
 		        "  'PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER\n"
 		        "  IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.'\n"
 		        "CHIEF ENGINEER SCOTT REPORTS  'WARP ENGINES SHUT DOWN\n"
-		        "  AT SECTOR " << S1 << " , " << S2 << " OF QUADRANT " << Q1 << " , " << Q2 << " .'\n";
+		        "  AT SECTOR %g , %g OF QUADRANT %d , %d .'\n",
+			S1, S2, Q1, Q2);
 		if (T > T0 + T9)
 			return RG_GAME_END_TIME;
 	}
@@ -863,7 +876,7 @@ void maneuver_energy(int N)
 	if (E >= 0)
 		return;
 
-	cout << "SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER.\n";
+	printf("SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER.\n");
 	S += E;
 	E = 0;
 
@@ -881,31 +894,31 @@ void long_range_sensors()
 	const char *s_O1; // horizontal rule
 
 	if (D[3] < 0) {
-		cout << "LONG RANGE SENSORS ARE INOPERABLE\n";
+		printf("LONG RANGE SENSORS ARE INOPERABLE\n");
 		return;
 	}
 
-	cout << "LONG RANGE SCAN FOR QUADRANT " << Q1 << " , " << Q2 << "\n";
+	printf("LONG RANGE SCAN FOR QUADRANT %d , %d\n", Q1, Q2);
 	s_O1 = "-------------------";
-	cout << s_O1 << "\n";
+	printf("%s\n", s_O1);
 	for (I = Q1 - 1; I <= Q1 + 1; I++) {
 		for (J = Q2 - 1; J <= Q2 + 1; J++) {
-			cout << ": ";
+			printf(": ");
 			if (I > 0 && I < 9 && J > 0 && J < 9) {
-				cout << b_RIGHT(b_STR(G[I][J] + 1000), 3) << " ";
+				printf("%03d ", G[I][J]);
 				Z[I][J] = G[I][J];
 			} else {
-				cout << "*** ";
+				printf("*** ");
 			}
 		}
-		cout << ":\n" << s_O1 << "\n";
+		printf( ":\n%s\n", s_O1);
 	}
 }
 
 void no_enemy_ships()
 {
-	cout << "SCIENCE OFFICER SPOCK REPORTS  'SENSORS SHOW NO ENEMY SHIPS\n"
-	        "                                IN THIS QUADRANT'\n";
+	printf("SCIENCE OFFICER SPOCK REPORTS  'SENSORS SHOW NO ENEMY SHIPS\n"
+	       "                                IN THIS QUADRANT'\n");
 }
 
 
@@ -918,7 +931,7 @@ rg_t phaser_control()
 	double X; // energy to fire
 
 	if (D[4] < 0) {
-		cout << "PHASERS INOPERATIVE\n";
+		printf("PHASERS INOPERATIVE\n");
 		return RG_MAIN_LOOP;
 	}
 
@@ -928,14 +941,14 @@ rg_t phaser_control()
 	}
 
 	if (D[8] < 0)
-		cout << "COMPUTER FAILURE HAMPERS ACCURACY\n";
+		printf("COMPUTER FAILURE HAMPERS ACCURACY\n");
 
-	cout << "PHASERS LOCKED ON TARGET;  ";
+	printf("PHASERS LOCKED ON TARGET;  ");
 
 	do {
-		cout << "ENERGY AVAILABLE = " << E << " UNITS\n"
-		        "NUMBER OF UNITS TO FIRE? ";
-		b_INPUT(X);
+		printf("ENERGY AVAILABLE = %g UNITS\n"
+		       "NUMBER OF UNITS TO FIRE? ", E);
+		b_INPUT_1(&X);
 
 		if (X <= 0)
 			return RG_MAIN_LOOP;
@@ -955,20 +968,20 @@ rg_t phaser_control()
 		H = (int)(H1 / b_FND(I) * (b_RND(1) + 2));
 
 		if (H <= 0.15 * K[I][3]) {
-			cout << "SENSORS SHOW NO DAMAGE TO ENEMY AT  " << K[I][1] << " , " << K[I][2] << "\n";
+			printf( "SENSORS SHOW NO DAMAGE TO ENEMY AT  %g , %g\n", K[I][1], K[I][2]);
 			continue;
 		}
 
 		K[I][3] -= H;
-		cout << " " << H << " UNIT HIT ON KLINGON AT SECTOR " << K[I][1] << " ,"
-		        " " << K[I][2] << "\n";
+		printf( " %d UNIT HIT ON KLINGON AT SECTOR %g ,"
+		        " %g\n", H, K[I][1], K[I][2]);
 
 		if (K[I][3] > 0) {
-			cout << "   (SENSORS SHOW " << K[I][3] << " UNITS REMAINING)\n";
+			printf( "   (SENSORS SHOW %g UNITS REMAINING)\n", K[I][3]);
 			continue;
 		}
 
-		cout << "*** KLINGON DESTROYED ***\n";
+		printf( "*** KLINGON DESTROYED ***\n");
 		K3--; K9--;
 		set_sector(K[I][1], K[I][2], "   ");
 		K[I][3] = 0;
@@ -999,24 +1012,24 @@ rg_t photon_torpedo()
 	       C1; // torpedo course
 
 	if (P <= 0) {
-		cout << "ALL PHOTON TORPEDOES EXPENDED\n";
+		printf( "ALL PHOTON TORPEDOES EXPENDED\n");
 		return RG_MAIN_LOOP;
 	}
 
 	if (D[5] < 0) {
-		cout << "PHOTON TUBES ARE NOT OPERATIONAL\n";
+		printf( "PHOTON TUBES ARE NOT OPERATIONAL\n");
 		return RG_MAIN_LOOP;
 	}
 
 	while(1) {
-		cout << "PHOTON TORPEDO COURSE (1-9)? ";
-		b_INPUT(C1);
+		printf( "PHOTON TORPEDO COURSE (1-9)? ");
+		b_INPUT_1(&C1);
 
 		if (C1 == 9)
 			C1 = 1;
 
 		if (C1 < 1 || C1 >= 9) {
-			cout << "ENSIGN CHEKOV REPORTS,  'INCORRECT COURSE DATA, SIR!'\n";
+			printf( "ENSIGN CHEKOV REPORTS,  'INCORRECT COURSE DATA, SIR!'\n");
 			return RG_MAIN_LOOP;
 		}
 
@@ -1027,23 +1040,23 @@ rg_t photon_torpedo()
 		X = S1;
 		Y = S2;
 
-		cout << "TORPEDO TRACK:\n";
+		printf( "TORPEDO TRACK:\n");
 		do {
 			X += X1; Y += X2;
 			X3 = (int)(X + 0.5); Y3 = (int)(Y + 0.5);
 
 			if (X3 < 1 || X3 > 8 || Y3 < 1 || Y3 > 8) {
-				cout << "TORPEDO MISSED\n";
+				printf( "TORPEDO MISSED\n");
 				if ((ret = klingons_shooting()) != RG_PASS)
 					return ret;
 				return RG_MAIN_LOOP;
 			}
 
-			cout << "                " << X3 << " , " << Y3 << "\n";
+			printf( "                %d , %d\n", X3, Y3);
 		} while (is_sector(X, Y, "   "));
 
 		if (is_sector(X, Y, "+K+")) {
-			cout << "*** KLINGON DESTROYED ***\n";
+			printf("*** KLINGON DESTROYED ***\n");
 			K3--; K9--;
 
 			if (K9 <= 0)
@@ -1059,20 +1072,20 @@ rg_t photon_torpedo()
 
 			K[I][3] = 0;
 		} else if (is_sector(X, Y, " * ")) {
-			cout << "STAR AT " << X3 << " , " << Y3 << " ABSORBED TORPEDO ENERGY.\n";
+			printf( "STAR AT %d , %d ABSORBED TORPEDO ENERGY.\n", X3, Y3);
 
 			if ((ret = klingons_shooting()) != RG_PASS)
 				return ret;
 			return RG_MAIN_LOOP;
 		} else if (is_sector(X, Y, ">!<")) {
-			cout << "*** STARBASE DESTROYED ***\n";
+			printf( "*** STARBASE DESTROYED ***\n");
 			B3--; B9--;
 
 			if (B9 <= 0 && K9 <= T - T0 - T9)
 				return RG_GAME_END_TORPEDOED_STARBASE;
 
-			cout << "STARFLEET COMMAND REVIEWING YOUR RECORD TO CONSIDER\n"
-			        "COURT MARTIAL!\n";
+			printf( "STARFLEET COMMAND REVIEWING YOUR RECORD TO CONSIDER\n"
+			        "COURT MARTIAL!\n");
 			D0 = false;
 		} else {
 			// if you blew up something that isn't a klingon, star, or starbase, you get to fire again?
@@ -1097,30 +1110,30 @@ void shield_control()
 	double X; // desired shield strength
 
 	if (D[7] < 0) {
-		cout << "SHIELD CONTROL INOPERABLE\n";
+		printf( "SHIELD CONTROL INOPERABLE\n");
 		return;
 	}
 
-	cout << "ENERGY AVAILABLE = " << E + S << " "
-	        "NUMBER OF UNITS TO SHIELDS? ";
-	b_INPUT(X);
+	printf( "ENERGY AVAILABLE = %g "
+	        "NUMBER OF UNITS TO SHIELDS? ", E + S);
+	b_INPUT_1(&X);
 
 	if (X < 0 || S == X) {
-		cout << "<SHIELDS UNCHANGED>\n";
+		printf( "<SHIELDS UNCHANGED>\n");
 		return;
 	}
 
 	if (X > E + S) {
-		cout << "SHIELD CONTROL REPORTS  'THIS IS NOT THE FEDERATION TREASURY.'\n"
-		        "<SHIELDS UNCHANGED>\n";
+		printf( "SHIELD CONTROL REPORTS  'THIS IS NOT THE FEDERATION TREASURY.'\n"
+		        "<SHIELDS UNCHANGED>\n");
 		return;
 	}
 
 	E += S - X;
 	S = X;
 
-	cout << "DEFLECTOR CONTROL ROOM REPORT:\n"
-	        "  'SHIELDS NOW AT " << (int)(S) << " UNITS PER YOUR COMMAND.'\n";
+	printf( "DEFLECTOR CONTROL ROOM REPORT:\n"
+	        "  'SHIELDS NOW AT %d UNITS PER YOUR COMMAND.'\n", (int)(S));
 }
 
 
@@ -1128,7 +1141,7 @@ rg_t starbase_repair()
 {
 	double D3; // estimated starbase repair time
 	int I;
-	string s_A;
+	char s_A[2];
 
 	D3 = 0;
 	for (I = 1; I <= 8; I++) {
@@ -1139,18 +1152,18 @@ rg_t starbase_repair()
 	if (D3 == 0)
 		return RG_MAIN_LOOP;
 
-	cout << "\n";
+	printf( "\n");
 	D3 += D4;
 
 	if (D3 >= 1)
 		D3 = 0.9;
 
-	cout << "TECHNICIANS STANDING BY TO EFFECT REPAIRS TO YOUR SHIP;\n"
-	        "ESTIMATED TIME TO REPAIR: " << 0.01 * (int)(100 * D3) << " STARDATES\n"
-	        "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)? ";
-	b_INPUT(s_A);
+	printf( "TECHNICIANS STANDING BY TO EFFECT REPAIRS TO YOUR SHIP;\n"
+	        "ESTIMATED TIME TO REPAIR: %g STARDATES\n"
+	        "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)? ", 0.01 * (int)(100 * D3));
+	b_INPUT_S(s_A, 2);
 
-	if (s_A != "Y")
+	if (strnicmp(s_A, "Y", 1) != 0)
 		return RG_MAIN_LOOP;
 
 	for (I = 1; I <= 8; I++) {
@@ -1164,15 +1177,15 @@ rg_t starbase_repair()
 
 void damage_report()
 {
-	cout << "\n"
-	        "DEVICE             STATE OF REPAIR\n";
+	printf( "\n"
+	        "DEVICE             STATE OF REPAIR\n");
 
 	for (R1 = 1; R1 <= 8; R1++) {
-		string s_G2 = get_device_name(R1);
-		cout << s_G2 << b_SPC(25 - b_LEN(s_G2)) << " " << (int)(D[(int)(R1)] * 100) * 0.01 << "\n";
+		const char *s_G2 = get_device_name(R1);
+		printf("%s%s %g\n", s_G2, b_SPC(25 - strlen(s_G2)), (int)(D[(int)(R1)] * 100) * 0.01);
 	}
 
-	cout << "\n";
+	printf( "\n");
 }
 
 // DAMAGE CONTROL
@@ -1181,7 +1194,7 @@ void damage_control()
 	rg_t ret;
 
 	if (D[6] < 0) {
-		cout << "DAMAGE CONTROL REPORT NOT AVAILABLE\n";
+		printf( "DAMAGE CONTROL REPORT NOT AVAILABLE\n");
 
 		if (!D0)
 			return;
@@ -1211,7 +1224,7 @@ rg_t klingons_shooting()
 		return RG_PASS;
 
 	if (D0) {
-		cout << "STARBASE SHIELDS PROTECT THE ENTERPRISE\n";
+		printf( "STARBASE SHIELDS PROTECT THE ENTERPRISE\n");
 		return RG_PASS;
 	}
 
@@ -1224,12 +1237,12 @@ rg_t klingons_shooting()
 		H = (int)((K[I][3] / b_FND(I)) * (2 + b_RND(1)));
 		S -= H;
 		K[I][3] /= 3 + b_RND(0);
-		cout << " " << H << " UNIT HIT ON ENTERPRISE FROM SECTOR " << K[I][1] << " , " << K[I][2] << "\n";
+		printf(" %d UNIT HIT ON ENTERPRISE FROM SECTOR %g , %g\n", H, K[I][1], K[I][2]);
 
 		if (S <= 0)
 			return RG_GAME_END_ENTERPRISE_DESTROYED;
 
-		cout << "      <SHIELDS DOWN TO " << S << " UNITS>\n";
+		printf("      <SHIELDS DOWN TO %g UNITS>\n", S);
 
 		if (H < 20)
 			continue;
@@ -1239,7 +1252,7 @@ rg_t klingons_shooting()
 
 		R1 = b_FNR(1);
 		D[(int)(R1)] -= H / S + 0.5 * b_RND(1);
-		cout << "DAMAGE CONTROL REPORTS " << get_device_name(R1) << " DAMAGED BY THE HIT'\n";
+		printf("DAMAGE CONTROL REPORTS %s DAMAGED BY THE HIT'\n", get_device_name(R1));
 	}
 
 	return RG_PASS;
@@ -1252,18 +1265,18 @@ void end_of_game(rg_t end_type)
 	switch (end_type)
 	{
 		case RG_GAME_END_NO_ENERGY:
-			cout << "\n"
+			printf( "\n"
 			        "** FATAL ERROR **   YOU'VE JUST STRANDED YOUR SHIP IN \n"
 			        "SPACE\n"
 			        "YOU HAVE INSUFFICIENT MANEUVERING ENERGY,"
 			        " AND SHIELD CONTROL\n"
 			        "IS PRESENTLY INCAPABLE OF CROSS"
-			        "-CIRCUITING TO ENGINE ROOM!!\n";
+			        "-CIRCUITING TO ENGINE ROOM!!\n");
 			break;
 
 		case RG_GAME_END_TORPEDOED_STARBASE:
-			cout << "THAT DOES IT, CAPTAIN!!  YOU ARE HEREBY RELIEVED OF COMMAND\n"
-			        "AND SENTENCED TO 99 STARDATES AT HARD LABOR ON CYGNUS 12!!\n";
+			printf( "THAT DOES IT, CAPTAIN!!  YOU ARE HEREBY RELIEVED OF COMMAND\n"
+			        "AND SENTENCED TO 99 STARDATES AT HARD LABOR ON CYGNUS 12!!\n");
 
 		default:
 			break;
@@ -1272,39 +1285,39 @@ void end_of_game(rg_t end_type)
 	switch(end_type)
 	{
 		case RG_GAME_END_NO_KLINGONS:
-			cout << "CONGRULATION, CAPTAIN!  THEN LAST KLINGON BATTLE CRUISER\n"
+			printf( "CONGRULATION, CAPTAIN!  THEN LAST KLINGON BATTLE CRUISER\n"
 			        "MENACING THE FDERATION HAS BEEN DESTROYED.\n\n"
-			        "YOUR EFFICIENCY RATING IS " << 1000 * (K7 / (T - T0)) * (K7 / (T - T0)) << "\n";
+			        "YOUR EFFICIENCY RATING IS %g\n", 1000 * (K7 / (T - T0)) * (K7 / (T - T0)));
 			break;
 
 		case RG_GAME_END_ENTERPRISE_DESTROYED:
-			cout << "\n"
+			printf( "\n"
 			        "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION "
-			        "WILL BE CONQUERED\n";
+			        "WILL BE CONQUERED\n");
 
 		case RG_GAME_END_TIME:
 		case RG_GAME_END_NO_ENERGY:
-			cout << "IT IS STARDATE " << T << "\n";
+			printf( "IT IS STARDATE %g\n", T);
 
 		case RG_GAME_END_RESIGN:
 		case RG_GAME_END_TORPEDOED_STARBASE:
-			cout << "THERE WERE " << K9 << " KLINGON BATTLE CRUISERS LEFT AT\n"
-			        "THE END OF YOUR MISSION.\n";
+			printf( "THERE WERE %d KLINGON BATTLE CRUISERS LEFT AT\n"
+			        "THE END OF YOUR MISSION.\n", K9);
 
 		default:
 			break;
 	}
 
-	cout << "\n\n";
+	printf( "\n\n");
 
 	if (B9 > 0) {
-		string s_A;
-		cout << "THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER\n"
+		char s_A[4];
+		printf( "THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER\n"
 		        "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,\n"
-		        "LET HIM STEP FORWARD AND ENTER 'AYE'? ";
-		b_INPUT(s_A);
+		        "LET HIM STEP FORWARD AND ENTER 'AYE'? ");
+		b_INPUT_S(s_A, 4);
 
-		if (s_A == "AYE")
+		if (strnicmp(s_A, "AYE", 3) == 0)
 			return;
 	}
 
@@ -1340,7 +1353,7 @@ void short_range_sensors_dock()
 		s_C = "DOCKED";
 		E = E0;
 		P = P0;
-		cout << "SHIELDS DROPPED FOR DOCKING PURPOSES\n";
+		printf( "SHIELDS DROPPED FOR DOCKING PURPOSES\n");
 		S = 0;
 	} else if (K3 > 0) {
 		s_C = "*RED*";
@@ -1352,27 +1365,27 @@ void short_range_sensors_dock()
 	}
 
 	if (D[2] < 0) {
-		cout << "\n*** SHORT RANGE SENSORS ARE OUT ***\n\n";
+		printf( "\n*** SHORT RANGE SENSORS ARE OUT ***\n\n");
 		return;
 	}
 
 	s_O1 = "---------------------------------";
-	cout << s_O1 << "\n";
+	printf("%s\n", s_O1);
 	for (I = 1; I <= 8; I++) {
 		for (J = (I - 1) * 24 + 1; J <= (I - 1) * 24 + 22; J += 3) {
-			cout << " " << b_MID(s_Q, J, 3);
+			printf( " %c%c%c", s_Q[J - 1], s_Q[J], s_Q[J + 1]);
 		}
 
-		if (I == 1) cout << "        STARDATE           " << (int)(T * 10) * 0.1 << "\n";
-		if (I == 2) cout << "        CONDITION          " << s_C << "\n";
-		if (I == 3) cout << "        QUADRANT           " << Q1 << " , " << Q2 << "\n";
-		if (I == 4) cout << "        SECTOR             " << S1 << " , " << S2 << "\n";
-		if (I == 5) cout << "        PHOTON TORPEDOES   " << (int)(P) << "\n";
-		if (I == 6) cout << "        TOTAL ENERGY       " << (int)(E + S) << "\n";
-		if (I == 7) cout << "        SHIELDS            " << (int)(S) << "\n";
-		if (I == 8) cout << "        KLINGONS REMAINING " << (int)(K9) << "\n";
+		if (I == 1) printf( "        STARDATE           %g\n", (int)(T * 10) * 0.1);
+		if (I == 2) printf( "        CONDITION          %s\n", s_C);
+		if (I == 3) printf( "        QUADRANT           %d , %d\n", Q1, Q2);
+		if (I == 4) printf( "        SECTOR             %g , %g\n", S1, S2);
+		if (I == 5) printf( "        PHOTON TORPEDOES   %d\n", (int)(P));
+		if (I == 6) printf( "        TOTAL ENERGY       %d\n", (int)(E + S));
+		if (I == 7) printf( "        SHIELDS            %d\n", (int)(S));
+		if (I == 8) printf( "        KLINGONS REMAINING %d\n", (int)(K9));
 	}
-	cout << s_O1 << "\n";
+	printf("%s\n", s_O1);
 }
 
 
@@ -1380,7 +1393,7 @@ void short_range_sensors_dock()
 void library_computer()
 {
 	if (D[8] < 0) {
-		cout << "COMPUTER DISABLED\n";
+		printf( "COMPUTER DISABLED\n");
 		return;
 	}
 
@@ -1388,12 +1401,12 @@ void library_computer()
 	{
 		double A; // library-computer function input
 
-		cout << "COMPUTER ACTIVE AND AWAITING COMMAND? ";
-		b_INPUT(A);
+		printf( "COMPUTER ACTIVE AND AWAITING COMMAND? ");
+		b_INPUT_1(&A);
 
 		if (A < 0)
 			return;
-		cout << "\n";
+		printf( "\n");
 
 		if (A == 0) galaxy_map(GALAXY_MAP_RECORD);
 		else if (A == 1) status_report();
@@ -1402,13 +1415,13 @@ void library_computer()
 		else if (A == 4) dir_calc(DIR_CALC_INPUT);
 		else if (A == 5) galaxy_map(GALAXY_MAP_NAMES);
 		else {
-			cout << "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n"
+			printf( "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n"
 			        "   0 = CUMULATIVE GALACTIC RECORD\n"
 			        "   1 = STATUS REPORT\n"
 			        "   2 = PHOTON TORPEDO DATA\n"
 			        "   3 = STARBASE NAV DATA\n"
 			        "   4 = DIRECTION/DISTANCE CALCULATOR\n"
-			        "   5 = GALAXY 'REGION NAME' MAP\n\n";
+			        "   5 = GALAXY 'REGION NAME' MAP\n\n");
 			continue;
 		}
 		break;
@@ -1425,47 +1438,47 @@ void galaxy_map(gm_t map_type)
 	if (map_type != GALAXY_MAP_RECORD)
 	{
 		// SETUP TO CHANGE CUM GAL RECORD TO GALAXY MAP
-		cout << "                        THE GALAXY\n";
+		printf( "                        THE GALAXY\n");
 	} else {
 		// CUM GALACTIC RECORD
 		// INPUT"DO YOU WANT A HARDCOPY? IS THE TTY ON (Y/N)";A$
 		// IFA$="Y"THENPOKE1229,2:POKE1237,3:NULL1
-		cout << "\n"
+		printf( "\n"
 		        "        "
-		        "COMPUTER RECORD OF GALAXY FOR QUADRANT " << Q1 << " , " << Q2 << "\n"
-		        "\n";
+		        "COMPUTER RECORD OF GALAXY FOR QUADRANT %d , %d\n"
+		        "\n", Q1, Q2);
 	}
 
-	cout << "       1     2     3     4     5     6     7     8\n";
+	printf( "       1     2     3     4     5     6     7     8\n");
 	s_O1 = "     ----- ----- ----- ----- ----- ----- ----- -----";
-	cout << s_O1 << "\n";
+	printf("%s\n", s_O1);
 	for (I = 1; I <= 8; I++) {
-		cout << " " << I << " ";
+		printf( " %d ", I);
 		if (map_type == GALAXY_MAP_RECORD) {
 			for (J = 1; J <= 8; J++) {
-				cout << "   ";
+				printf( "   ");
 
 				if (Z[I][J] == 0) {
-					cout << "***";
+					printf( "***");
 					continue;
 				}
 
-				cout << b_RIGHT(b_STR(Z[I][J] + 1000), 3);
+				printf("%03d", Z[I][J]);
 			}
 		} else {
 			int J0; // spacing of names on galaxy map
-			string s_G2; // quadrant name
+			const char *s_G2; // quadrant name
 
-			s_G2 = get_quadrant_name(I, 1, true);
-			J0 = (int)(12 - 0.5 * b_LEN(s_G2));
-			cout << b_SPC(J0) << s_G2 << b_SPC(J0 + b_LEN(s_G2) % 2);
-			s_G2 = get_quadrant_name(I, 5, true);
-			J0 = (int)(12 - 0.5 * b_LEN(s_G2));
-			cout << b_SPC(J0) << s_G2;
+			s_G2 = get_quadrant_name(I, 1);
+			J0 = (int)(12 - 0.5 * strlen(s_G2));
+			printf("%s%s%s", b_SPC(J0), s_G2, b_SPC(J0 + strlen(s_G2) % 2));
+			s_G2 = get_quadrant_name(I, 5);
+			J0 = (int)(12 - 0.5 * strlen(s_G2));
+			printf("%s%s", b_SPC(J0), s_G2);
 		}
-		cout << "\n" << s_O1 << "\n";
+		printf( "\n%s\n", s_O1);
 	}
-	cout << "\n";
+	printf( "\n");
 }
 
 
@@ -1474,21 +1487,22 @@ void status_report()
 {
 	const char *s_X; // plural
 
-	cout << "   STATUS REPORT:\n";
+	printf( "   STATUS REPORT:\n");
 
 	s_X = (K9 > 1) ? "S" : "";
-	cout << "KLINGON" << s_X << " LEFT:  " << K9 << "\n"
-	        "MISSION MUST BE COMPLETED IN " << 0.1 * (int)((T0 + T9 - T) * 10) << " STARDATES\n";
+	printf( "KLINGON%s LEFT:  %d\n"
+	        "MISSION MUST BE COMPLETED IN %g STARDATES\n",
+		s_X, K9, 0.1 * (int)((T0 + T9 - T) * 10));
 
 	if (B9 < 1) {
-		cout << "YOUR STUPIDITY HAS LEFT YOU ON YOUR ON IN\n"
-		        "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!\n";
+		printf( "YOUR STUPIDITY HAS LEFT YOU ON YOUR ON IN\n"
+		        "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!\n");
 		damage_control();
 		return;
 	}
 
 	s_X = (B9 > 1) ? "S" : "";
-	cout << "THE FEDERATION IS MAINTAINING " << B9 << " STARBASE" << s_X << " IN THE GALAXY\n";
+	printf( "THE FEDERATION IS MAINTAINING %d STARBASE%s IN THE GALAXY\n", B9, s_X);
 	damage_control();
 }
 
@@ -1502,8 +1516,8 @@ void actual_dir_calc(double C1, double A, double W1, double X)
 	W1 /= abs(X) > abs(A) ? abs(X) : abs(A);
 	C1 += ((X > 0) == (A > 0)) ? W1 : -W1;
 
-	cout << "DIRECTION = " << C1 << "\n"
-	        "DISTANCE = " << sqrt(X * X + A * A) << "\n";
+	printf( "DIRECTION = %g\n"
+	        "DISTANCE = %g\n", C1, sqrt(X * X + A * A));
 }
 
 
@@ -1521,7 +1535,7 @@ void dir_calc(dc_t calc_type)
 		}
 
 		s_X = (K3 > 1) ? "S" : "";
-		cout << "FROM ENTERPRISE TO KLINGON BATTLE CRUSER" << s_X << "\n";
+		printf( "FROM ENTERPRISE TO KLINGON BATTLE CRUSER%s\n", s_X);
 
 		for (I = 1; I <= 3; I++) {
 			if (K[I][3] <= 0)
@@ -1531,12 +1545,12 @@ void dir_calc(dc_t calc_type)
 		}
 	} else if (calc_type == DIR_CALC_STARBASE) {
 		if (B3 == 0) {
-			cout << "MR. SPOCK REPORTS,  'SENSORS SHOW NO STARBASES IN THIS"
-			        " QUADRANT.'\n";
+			printf( "MR. SPOCK REPORTS,  'SENSORS SHOW NO STARBASES IN THIS"
+			        " QUADRANT.'\n");
 			return;
 		}
 
-		cout << "FROM ENTERPRISE TO STARBASE:\n";
+		printf( "FROM ENTERPRISE TO STARBASE:\n");
 		actual_dir_calc(S1, S2, B4, B5);
 	} else if (calc_type == DIR_CALC_INPUT) {
 		double C1, // initial X coord
@@ -1544,13 +1558,13 @@ void dir_calc(dc_t calc_type)
 		       W1, // final X coord
 		       X;  // final Y coord
 
-		cout << "DIRECTION/DISTANCE CALCULATOR:\n"
-		        "YOU ARE AT QUADRANT  " << Q1 << " , " << Q2 << "  SECTOR  " << S1 << " , " << S2 << "\n"
+		printf( "DIRECTION/DISTANCE CALCULATOR:\n"
+		        "YOU ARE AT QUADRANT  %d , %d  SECTOR  %g , %g\n"
 		        "PLEASE ENTER\n"
-		        "  INITIAL COORDINATES (X,Y)? ";
-		b_INPUT(C1, A);
-		cout << "  FINAL COORDINATES (X,Y)? ";
-		b_INPUT(W1, X);
+		        "  INITIAL COORDINATES (X,Y)? ", Q1, Q2, S1, S2);
+		b_INPUT_2(&C1, &A);
+		printf( "  FINAL COORDINATES (X,Y)? ");
+		b_INPUT_2(&W1, &X);
 		actual_dir_calc(C1, A, W1, X);
 	}
 }
@@ -1570,17 +1584,19 @@ void set_sector(double Z1, double Z2, const char *s_A)
 {
 	S8 = (int)(Z2 - 0.5) * 3 + (int)(Z1 - 0.5) * 24;
 
-	if (b_LEN(s_A) != 3) {
-		cout << "ERROR\n";
+	if (strlen(s_A) != 3) {
+		printf( "ERROR\n");
 		exit(0);
 	}
 
-	s_Q.replace(S8, 3, s_A);
+	s_Q[S8] = s_A[0];
+	s_Q[S8 + 1] = s_A[1];
+	s_Q[S8 + 2] = s_A[2];
 }
 
 
 // PRINTS DEVICE NAME
-string get_device_name(int R1)
+const char *get_device_name(int R1)
 {
 	const char *device_names[] = {
 		"WARP ENGINES", "SHORT RANGE SENSORS", "LONG RANGE SENSORS",
@@ -1588,14 +1604,9 @@ string get_device_name(int R1)
 		"SHIELD CONTROL", "LIBRARY-COMPUTER"
 	};
 
-	string s_G2;
-
 	if (R1 >= 1 && R1 <= 8)
-		s_G2 = device_names[R1 - 1];
-	else
-		s_G2 = device_names[0];
-
-	return s_G2;
+		return device_names[R1 - 1];
+	return device_names[0];
 }
 
 
@@ -1604,13 +1615,12 @@ bool is_sector(double Z1, double Z2, const char *s_A)
 {
 	Z1 = (int)(Z1 + 0.5); Z2 = (int)(Z2 + 0.5);
 	S8 = (Z2 - 1) * 3 + (Z1 - 1) * 24 + 1;
-	return (b_MID(s_Q, S8, 3) == s_A);
+	return (strncmp(s_Q + S8 - 1, s_A, 3) == 0);
 }
 
 
 // QUADRANT NAME IN G2$ FROM Z4,Z5 (=Q1,Q2)
-// CALL WITH G5=1 TO GET REGION NAME ONLY
-string get_quadrant_name(int Z4, int Z5, bool G5)
+const char *get_quadrant_name(int Z4, int Z5)
 {
 	const char *quadrant_names[] = {
 		"ANTARES", "RIGEL", "PROCYON", "VEGA", "CANOPUS", "ALTAIR",
@@ -1618,19 +1628,18 @@ string get_quadrant_name(int Z4, int Z5, bool G5)
 		"BETELGEUSE", "ALDEBARAN", "REGULUS", "ARCTURUS", "SPICA"
 	};
 
+	if (Z4 >= 1 && Z4 <= 8)
+		return quadrant_names[Z4 + ((Z5 <= 4) ? -1 : 7)];
+	return quadrant_names[8];
+}
+
+const char *get_quadrant_number(int Z5)
+{
 	const char *quadrant_numbers[] = {
 		" I", " II", " III", " IV"
 	};
 
-	string s_G2;
-
-	if (Z4 >= 1 && Z4 <= 8)
-		s_G2 = quadrant_names[Z4 + ((Z5 <= 4) ? -1 : 7)];
-	else
-		s_G2 = quadrant_names[8];
-
-	if (!G5 && Z5 >= 1 && Z5 <= 8)
-		s_G2 = s_G2 + quadrant_numbers[(int)(Z5 - 1) % 4];
-
-	return s_G2;
+	if (Z5 >= 1 && Z5 <= 8)
+		return quadrant_numbers[(int)(Z5 - 1) % 4];
+	return "";
 }
