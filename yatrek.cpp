@@ -51,7 +51,14 @@ ranctx rstate;
 
 float b_RND(double R)
 {
-	return (ranval(&rstate) >> 8) * (1. / (1 << 24));
+	u4 val;
+
+	if (R == 0)
+		val = rstate.d;
+	else
+		val = ranval(&rstate);
+
+	return (val >> 8) * (1. / (1 << 24));
 }
 
 const char *b_SPC(int len)
@@ -64,21 +71,24 @@ const char *b_SPC(int len)
 	return space + 80 - len;
 }
 
+void input80(char s[80], size_t size)
+{
+	fflush(stdout);
+	fgets(s, size, stdin);
+	s[size-1] = '\0';
+}
+
 void b_INPUT_1(double *num)
 {
 	char s[80];
-	fflush(stdout);
-	fgets(s, sizeof(s), stdin);
-	s[79] = '\0';
+	input80(s, sizeof(s));
 	sscanf(s, "%lf", num);
 }
 
 void b_INPUT_2(double *num1, double *num2)
 {
 	char s[80];
-	fflush(stdout);
-	fgets(s, sizeof(s), stdin);
-	s[79] = '\0';
+	input80(s, sizeof(s));
 	sscanf(s, "%lf,%lf", num1, num2);
 }
 
@@ -87,9 +97,7 @@ void b_INPUT_S(char *out, int size)
 	char s[80];
 	int i;
 
-	fflush(stdout);
-	fgets(s, 80, stdin);
-	s[79] = '\0';
+	input80(s, sizeof(s));
 
 	for (i = 0; i < size; i++)
 	{
@@ -115,15 +123,11 @@ void b_INPUT_S(char *out, int size)
  * S can go non-int because E can be non-int and insufficient to perform a
  * maneuver, and then added to S.
  *
- * S1, S2 are mostly int, but can go non-int temporarily during navigation.
- *
  * S9, E0 are technically always int, but are basically constants so have
  * been left as double for flexibility.
  *
  * Z1, Z2 are usually int, but can go non-int during torpedo tracking.
  *
- * R2 is always int, but R1 can be non-int and they are commonly used
- * together.
  */
 
 // course calc constants
@@ -145,22 +149,18 @@ double T,  // current stardate
        E,  // current energy
        E0, // max energy
        S,  // shield strength
-       S1, // enterprise X sector
-       S2, // enterprise Y sector
 
        S9, // average klingon energy
-
-       R1, // random sector(): X result
-           // galaxy gen: random number
-           // damage control: device number
-           // klingons shooting: device number
-           // repair: device number
-       R2, // random sector(): Y result
 
        D4; // random extra starbase repair time
 
 int    Q1, // enterprise X quadrant
        Q2, // enterprise Y quadrant
+       S1, // enterprise X sector
+       S2, // enterprise Y sector
+
+       R1, // random sector(): X result
+       R2, // random sector(): Y result
 
        P,  // current # of torpedoes
        P0, // max # of torpedoes
@@ -190,9 +190,9 @@ double b_FND(int I)
 	return sqrt((K[I][1] - S1) * (K[I][1] - S1) + (K[I][2] - S2) * (K[I][2] - S2));
 }
 
-double b_FNR(double R)
+int b_FNR()
 {
-	return (int)(b_RND(R) * 7.98 + 1.01);
+	return (int)(b_RND(1) * 7.98 + 1.01);
 }
 
 typedef enum {
@@ -221,7 +221,7 @@ void new_galaxy();
 void new_quadrant();
 void main_loop();
 rg_t course_control();
-rg_t exceeded_quadrant_limits(int N, double X, double Y, double X1, double X2);
+rg_t exceeded_quadrant_limits(int N, double X1, double X2);
 void maneuver_energy(int N);
 void long_range_sensors();
 rg_t phaser_control();
@@ -468,8 +468,8 @@ void new_galaxy()
 	s_X0 = " IS ";
 
 	// INITIALIZE ENTERPRIZE'S POSITION
-	Q1 = b_FNR(1); Q2 = b_FNR(1);
-	S1 = b_FNR(1); S2 = b_FNR(1);
+	Q1 = b_FNR(); Q2 = b_FNR();
+	S1 = b_FNR(); S2 = b_FNR();
 
 	for (I = 1; I <= 8; I++)
 		D[I] = 0;
@@ -478,16 +478,18 @@ void new_galaxy()
 	// K3= # KLINGONS  B3= # STARBASES  S3 = # STARS
 	for (I = 1; I <= 8; I++) {
 		for (J = 1; J <= 8; J++) {
+			double dR1; // galaxy gen: random number
+
 			Z[I][J] = 0;
 
-			R1 = b_RND(1);
-			K3 = (R1 > 0.98) ? 3 : (R1 > 0.95) ? 2 : (R1 > 0.8) ? 1 : 0;
+			dR1 = b_RND(1);
+			K3 = (dR1 > 0.98) ? 3 : (dR1 > 0.95) ? 2 : (dR1 > 0.8) ? 1 : 0;
 			K9 += K3;
 
 			B3 = (b_RND(1) > 0.96) ? 1 : 0;
 			B9 += B3;
 
-			G[I][J] = K3 * 100 + B3 * 10 + b_FNR(1);
+			G[I][J] = K3 * 100 + B3 * 10 + b_FNR();
 		}
 	}
 
@@ -501,7 +503,7 @@ void new_galaxy()
 		}
 		B9 = 1;
 		G[Q1][Q2] += 10;
-		Q1 = b_FNR(1); Q2 = b_FNR(1);
+		Q1 = b_FNR(); Q2 = b_FNR();
 	}
 
 	K7 = K9;
@@ -746,45 +748,52 @@ rg_t course_control()
 	}
 
 	if (b_RND(1) <= 0.2) {
-		R1 = b_FNR(1);
+		int R1 = b_FNR(); // device number
 		printf("DAMAGE CONTROL REPORT:  %s", get_device_name(R1));
 
 		if (b_RND(1) < 0.6) {
-			D[(int)(R1)] -= b_RND(1) * 5 + 1;
+			D[R1] -= b_RND(1) * 5 + 1;
 			printf( " DAMAGED\n\n");
 		} else {
-			D[(int)(R1)] += b_RND(1) * 3 + 1;
+			D[R1] += b_RND(1) * 3 + 1;
 			printf( " STATE OF REPAIR IMPROVED\n\n");
 		}
 	}
 
 	// BEGIN MOVING STARSHIP
-	set_sector((int)(S1), (int)(S2), "   ");
+	set_sector(S1, S2, "   ");
 	X1 = C[(int)(C1)][1] + (C[(int)(C1 + 1)][1] - C[(int)(C1)][1]) * (C1 - (int)(C1));
 	X = S1; Y = S2;
 	X2 = C[(int)(C1)][2] + (C[(int)(C1 + 1)][2] - C[(int)(C1)][2]) * (C1 - (int)(C1));
 
+	// the original BASIC code used S1/S2 to track starship position
+	// this uses X/Y instead, so S1/S2 can be int
 	for (I = 1; I <= N; I++) {
-		S1 += X1; S2 += X2;
+		X += X1; Y += X2;
 
-		if (S1 < 1 || S1 >= 9 || S2 < 1 || S2 >= 9) {
-			if ((ret = exceeded_quadrant_limits(N, X, Y, X1, X2)) != RG_PASS)
+		if (X < 1 || X >= 9 || Y < 1 || Y >= 9) {
+			if ((ret = exceeded_quadrant_limits(N, X1, X2)) != RG_PASS)
 				return ret;
 			break;
 		}
 
-		S8 = (int)(S1) * 24 + (int)(S2) * 3 - 26;
+		S8 = (int)(X) * 24 + (int)(Y) * 3 - 26;
 
 		if (strncmp(s_Q + S8 - 1, "  ", 2) != 0) {
-			S1 -= X1; S2 -= X2;
+			S1 = (int)(X - X1); S2 = (int)(Y - X2);
 			printf( "WARP ENGINES SHUT DOWN AT "
-			        "SECTOR %g , %g DUE TO BAD NAVAGATION\n", S1, S2);
+			        "SECTOR %d , %d DUE TO BAD NAVAGATION\n", S1, S2);
 			break;
 		}
 	}
 
-	S1 = (int)(S1); S2 = (int)(S2);
-	set_sector((int)(S1), (int)(S2), "<*>");
+	// if we didn't exit the quadrant or hit something, store the final
+	// coordinates
+	if (I > N) {
+		S1 = (int)(X); S2 = (int)(Y);
+	}
+
+	set_sector(S1, S2, "<*>");
 	maneuver_energy(N);
 
 	T8 = (W1 < 1) ? 0.1 * (int)(10 * W1) : 1;
@@ -799,14 +808,15 @@ rg_t course_control()
 }
 
 // EXCEEDED QUADRANT LIMITS
-rg_t exceeded_quadrant_limits(int N, double X, double Y, double X1, double X2)
+rg_t exceeded_quadrant_limits(int N, double X1, double X2)
 {
 	int Q4,  // enterprise X quadrant before moving
 	    Q5;  // enterprise Y quadrant before moving
+	double X, Y;
 	bool X5; // flag - left galaxy
 
 	Q4 = Q1; Q5 = Q2;
-	X = 8 * Q1 + X + N * X1; Y = 8 * Q2 + Y + N * X2;
+	X = 8 * Q1 + S1 + N * X1; Y = 8 * Q2 + S1 + N * X2;
 	Q1 = (int)(X / 8); Q2 = (int)(Y / 8);
 	S1 = (int)(X - Q1 * 8); S2 = (int)(Y - Q2 * 8);
 
@@ -851,7 +861,7 @@ rg_t exceeded_quadrant_limits(int N, double X, double Y, double X1, double X2)
 		        "  'PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER\n"
 		        "  IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.'\n"
 		        "CHIEF ENGINEER SCOTT REPORTS  'WARP ENGINES SHUT DOWN\n"
-		        "  AT SECTOR %g , %g OF QUADRANT %d , %d .'\n",
+		        "  AT SECTOR %d , %d OF QUADRANT %d , %d .'\n",
 			S1, S2, Q1, Q2);
 		if (T > T0 + T9)
 			return RG_GAME_END_TIME;
@@ -1177,12 +1187,14 @@ rg_t starbase_repair()
 
 void damage_report()
 {
+	int R1; // device number
+
 	printf( "\n"
 	        "DEVICE             STATE OF REPAIR\n");
 
 	for (R1 = 1; R1 <= 8; R1++) {
 		const char *s_G2 = get_device_name(R1);
-		printf("%s%s %g\n", s_G2, b_SPC(25 - strlen(s_G2)), (int)(D[(int)(R1)] * 100) * 0.01);
+		printf("%s%s %g\n", s_G2, b_SPC(25 - strlen(s_G2)), (int)(D[R1] * 100) * 0.01);
 	}
 
 	printf( "\n");
@@ -1229,7 +1241,8 @@ rg_t klingons_shooting()
 	}
 
 	for (I = 1; I <= 3; I++) {
-		int H; // phaser damage from klingon
+		int H,  // phaser damage from klingon
+		    R1; // device number
 
 		if (K[I][3] <= 0)
 			continue;
@@ -1250,8 +1263,8 @@ rg_t klingons_shooting()
 		if (b_RND(1) > 0.6 || H / S <= 0.02)
 			continue;
 
-		R1 = b_FNR(1);
-		D[(int)(R1)] -= H / S + 0.5 * b_RND(1);
+		R1 = b_FNR();
+		D[R1] -= H / S + 0.5 * b_RND(1);
 		printf("DAMAGE CONTROL REPORTS %s DAMAGED BY THE HIT'\n", get_device_name(R1));
 	}
 
@@ -1379,7 +1392,7 @@ void short_range_sensors_dock()
 		if (I == 1) printf( "        STARDATE           %g\n", (int)(T * 10) * 0.1);
 		if (I == 2) printf( "        CONDITION          %s\n", s_C);
 		if (I == 3) printf( "        QUADRANT           %d , %d\n", Q1, Q2);
-		if (I == 4) printf( "        SECTOR             %g , %g\n", S1, S2);
+		if (I == 4) printf( "        SECTOR             %d , %d\n", S1, S2);
 		if (I == 5) printf( "        PHOTON TORPEDOES   %d\n", (int)(P));
 		if (I == 6) printf( "        TOTAL ENERGY       %d\n", (int)(E + S));
 		if (I == 7) printf( "        SHIELDS            %d\n", (int)(S));
@@ -1559,7 +1572,7 @@ void dir_calc(dc_t calc_type)
 		       X;  // final Y coord
 
 		printf( "DIRECTION/DISTANCE CALCULATOR:\n"
-		        "YOU ARE AT QUADRANT  %d , %d  SECTOR  %g , %g\n"
+		        "YOU ARE AT QUADRANT  %d , %d  SECTOR  %d , %d\n"
 		        "PLEASE ENTER\n"
 		        "  INITIAL COORDINATES (X,Y)? ", Q1, Q2, S1, S2);
 		b_INPUT_2(&C1, &A);
@@ -1574,7 +1587,7 @@ void dir_calc(dc_t calc_type)
 void get_empty_sector()
 {
 	do {
-		R1 = b_FNR(1); R2 = b_FNR(1);
+		R1 = b_FNR(); R2 = b_FNR();
 	} while (!is_sector(R1, R2, "   "));
 }
 
