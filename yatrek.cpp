@@ -71,7 +71,7 @@ const char *b_SPC(int len)
 	return space + 80 - len;
 }
 
-void input80(char s[80], size_t size)
+void input80(char *s, size_t size)
 {
 	fflush(stdout);
 	fgets(s, size, stdin);
@@ -195,6 +195,25 @@ int b_FNR()
 	return (int)(b_RND(1) * 7.98 + 1.01);
 }
 
+int my_strnicmp(const char *a, const char *b, size_t len)
+{
+	while (len--)
+	{
+		int v = toupper(*a) - toupper(*b);
+
+		if (v != 0)
+			return v;
+
+		if (!*a)
+			return 0;
+
+		a++;
+		b++;
+	}
+
+	return 0;
+}
+
 typedef enum {
 	GALAXY_MAP_NAMES,
 	GALAXY_MAP_RECORD,
@@ -265,7 +284,7 @@ void instructions()
 	printf("DO YOU NEED INSTRUCTIONS (Y/N)? ");
 	b_INPUT_S(s_K, 2);
 
-	if (stricmp(s_K, "N") == 0)
+	if (my_strnicmp(s_K, "N", 1) == 0)
 		return;
 
 	printf( "\n"
@@ -611,7 +630,7 @@ void main_loop()
 		b_INPUT_S(s_A, 4);
 
 		for (I = 1; I <= 9; I++) {
-			if (strnicmp(s_A, s_A1 + 3 * I - 3, 3) == 0)
+			if (my_strnicmp(s_A, s_A1 + 3 * I - 3, 3) == 0)
 				break;
 		}
 
@@ -1173,7 +1192,7 @@ rg_t starbase_repair()
 	        "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)? ", 0.01 * (int)(100 * D3));
 	b_INPUT_S(s_A, 2);
 
-	if (strnicmp(s_A, "Y", 1) != 0)
+	if (my_strnicmp(s_A, "Y", 1) != 0)
 		return RG_MAIN_LOOP;
 
 	for (I = 1; I <= 8; I++) {
@@ -1330,7 +1349,7 @@ void end_of_game(rg_t end_type)
 		        "LET HIM STEP FORWARD AND ENTER 'AYE'? ");
 		b_INPUT_S(s_A, 4);
 
-		if (strnicmp(s_A, "AYE", 3) == 0)
+		if (my_strnicmp(s_A, "AYE", 3) == 0)
 			return;
 	}
 
@@ -1525,8 +1544,8 @@ void actual_dir_calc(double C1, double A, double W1, double X)
 	X = X - A; A = W1 - C1;
 
 	C1 = (X > 0) ? ((A > 0) ? 8 : 2) : ((A > 0) ? 6 : 4);
-	W1 = abs(X) - abs(A);
-	W1 /= abs(X) > abs(A) ? abs(X) : abs(A);
+	W1 = fabs(X) - fabs(A);
+	W1 /= fabs(X) > fabs(A) ? fabs(X) : fabs(A);
 	C1 += ((X > 0) == (A > 0)) ? W1 : -W1;
 
 	printf( "DIRECTION = %g\n"
