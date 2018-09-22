@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #endif
 
+#define INLINE static inline
+
 ////////////////////////////////////////////////////////////////////////////////
 // below from "A small noncryptographic PRNG"
 // http://burtleburtle.net/bob/rand/smallprng.html
@@ -36,7 +38,7 @@ u4 ranval(ranctx *x)
 	return x->d;
 }
 
-void raninit(ranctx *x, u4 seed)
+INLINE void raninit(ranctx *x, u4 seed)
 {
 	u4 i;
 
@@ -236,23 +238,23 @@ typedef enum {
 	RG_GAME_END_NO_KLINGONS,
 } rg_t;
 
-void new_galaxy();
+INLINE void new_galaxy();
 void new_quadrant();
-void main_loop();
-rg_t course_control();
-rg_t exceeded_quadrant_limits(int N, double X1, double X2);
+INLINE void main_loop();
+INLINE rg_t course_control();
+INLINE rg_t exceeded_quadrant_limits(int N, double X1, double X2);
 void maneuver_energy(int N);
-void long_range_sensors();
-rg_t phaser_control();
-rg_t photon_torpedo();
-void shield_control();
-void damage_control();
+INLINE void long_range_sensors();
+INLINE rg_t phaser_control();
+INLINE rg_t photon_torpedo();
+INLINE void shield_control();
+INLINE void damage_control();
 rg_t klingons_shooting();
-void end_of_game(rg_t end_type);
+INLINE void end_of_game(rg_t end_type);
 void short_range_sensors_dock();
-void library_computer();
+INLINE void library_computer();
 void galaxy_map(gm_t map_type);
-void status_report();
+INLINE void status_report();
 void dir_calc(dc_t calc_type);
 void get_empty_sector();
 void set_sector(double Z1, double Z2, const char *s_A);
@@ -267,7 +269,7 @@ void linefeeds(int num)
 		printf("\n");
 }
 
-void instructions()
+INLINE void instructions()
 {
 	char s_K[2];
 
@@ -465,7 +467,7 @@ int main(int argc, char *argv[])
 }
 
 
-void new_galaxy()
+INLINE void new_galaxy()
 {
 	int I, J;
 	const char *s_X, *s_X0; // plurals
@@ -614,7 +616,7 @@ void new_quadrant()
 }
 
 
-void main_loop()
+INLINE void main_loop()
 {
 	while(1) {
 		char s_A[4];
@@ -669,7 +671,7 @@ void main_loop()
 
 
 // COURSE CONTROL BEGINS HERE
-rg_t course_control()
+INLINE rg_t course_control()
 {
 	rg_t ret;
 	double C1, // warp/torpedo course
@@ -827,7 +829,7 @@ rg_t course_control()
 }
 
 // EXCEEDED QUADRANT LIMITS
-rg_t exceeded_quadrant_limits(int N, double X1, double X2)
+INLINE rg_t exceeded_quadrant_limits(int N, double X1, double X2)
 {
 	int Q4,  // enterprise X quadrant before moving
 	    Q5;  // enterprise Y quadrant before moving
@@ -915,7 +917,7 @@ void maneuver_energy(int N)
 
 
 // LONG RANGE SENSOR SCAN CODE
-void long_range_sensors()
+INLINE void long_range_sensors()
 {
 	int I, // loop variable
 	    J; // loop variable 2
@@ -952,7 +954,7 @@ void no_enemy_ships()
 
 
 // PHASER CONTROL CODE BEGINS HERE
-rg_t phaser_control()
+INLINE rg_t phaser_control()
 {
 	rg_t ret;
 	int I,    // loop variable
@@ -1028,7 +1030,7 @@ rg_t phaser_control()
 
 
 // PHOTON TORPEDO CODE BEGINS HERE
-rg_t photon_torpedo()
+INLINE rg_t photon_torpedo()
 {
 	rg_t ret;
 	int I,  // loop variable
@@ -1134,7 +1136,7 @@ rg_t photon_torpedo()
 
 
 // SHIELD CONTROL
-void shield_control()
+INLINE void shield_control()
 {
 	double X; // desired shield strength
 
@@ -1220,7 +1222,7 @@ void damage_report()
 }
 
 // DAMAGE CONTROL
-void damage_control()
+INLINE void damage_control()
 {
 	rg_t ret;
 
@@ -1292,7 +1294,7 @@ rg_t klingons_shooting()
 
 
 // END OF GAME
-void end_of_game(rg_t end_type)
+INLINE void end_of_game(rg_t end_type)
 {
 	switch (end_type)
 	{
@@ -1356,7 +1358,7 @@ void end_of_game(rg_t end_type)
 	exit(0);
 }
 
-bool next_to_starbase()
+INLINE bool next_to_starbase()
 {
 	int I, J;
 
@@ -1422,7 +1424,7 @@ void short_range_sensors_dock()
 
 
 // LIBRARY COMPUTER CODE
-void library_computer()
+INLINE void library_computer()
 {
 	if (D[8] < 0) {
 		printf( "COMPUTER DISABLED\n");
@@ -1515,7 +1517,7 @@ void galaxy_map(gm_t map_type)
 
 
 // STATUS REPORT
-void status_report()
+INLINE void status_report()
 {
 	const char *s_X; // plural
 
