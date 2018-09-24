@@ -113,10 +113,15 @@ void b_INPUT_S(char *out, int size)
 	out[size - 1]  = '\0';
 }
 
+typedef struct
+{
+	int X;
+	int Y;
+	double E;
+} object_t;
+
 /*
  * int variables notes:
- *
- * K[?][3] can be non-int, although [?][1] and [?][2] cannot.
  *
  * E can be non-int, because there is no check for firing phasers at non-int
  * strength, and there is no check for setting shield strength to non-int.
@@ -132,17 +137,12 @@ void b_INPUT_S(char *out, int size)
  *
  */
 
-// course calc constants
-const int C[10][3] = {
-	{ 0, 0, 0}, { 0, 0, 1}, { 0, -1, 1}, { 0, -1, 0}, { 0, -1, -1},
-	{ 0, 0, -1}, { 0, 1, -1}, { 0, 1, 0}, { 0, 1, 1}, { 0, 0, 1}
-};
-
 int    G[9][9],  // galaxy info: 100 * klingons + 10 * starbases + stars
        Z[9][9];  // known galaxy info, same format as G[][]
 
-double K[4][4],  // klingon info: [1] = x [2] = y [3] = power
-       D[9];     // devices state of repair, < 0 -> damaged
+object_t K[4];   // klingon info
+
+double D[9];     // devices state of repair, < 0 -> damaged
 
 double T,  // current stardate
        T0, // initial stardate
@@ -189,7 +189,7 @@ char s_Q[192];  // quadrant string
 
 double b_FND(int I)
 {
-	return sqrt((K[I][1] - S1) * (K[I][1] - S1) + (K[I][2] - S2) * (K[I][2] - S2));
+	return sqrt((K[I].X - S1) * (K[I].X - S1) + (K[I].Y - S2) * (K[I].Y - S2));
 }
 
 int b_FNR()
@@ -262,6 +262,24 @@ const char *get_device_name(int R1);
 bool is_sector(double Z1, double Z2, const char *s_A);
 const char *get_quadrant_name(int Z4, int Z5);
 const char *get_quadrant_number(int Z5);
+
+void course_to_delta(double *X1, double *X2, double C1)
+{
+	// course calc constants
+	const signed char C[9] = { 0, -1, -1, -1, 0,  1,  1,  1, 0 };
+
+	int C3 = C1;
+	int C2 = C3 - 1;
+
+	C1 -= C3;
+
+	*X1 = C[C2] + (C[C3] - C[C2]) * C1;
+
+	C2 = (C2 + 6) & 7;
+	C3 = C2 + 1;
+
+	*X2 = C[C2] + (C[C3] - C[C2]) * C1;
+}
 
 void linefeeds(int num)
 {
@@ -581,12 +599,12 @@ void new_quadrant()
 		}
 
 		for (I = 1; I <= 3; I++) {
-			K[I][1] = 0; K[I][2] = 0;
+			K[I].X = 0; K[I].Y = 0;
 		}
 	}
 
 	for (I = 1; I <= 3; I++) {
-		K[I][3] = 0;
+		K[I].E = 0;
 	}
 
 	for (I = 0; I < 192; I++)
@@ -599,8 +617,8 @@ void new_quadrant()
 	for (I = 1; I <= K3; I++) {
 		get_empty_sector();
 		set_sector(R1, R2, "+K+");
-		K[I][1] = R1; K[I][2] = R2;
-		K[I][3] = S9 * (0.5 + b_RND(1));
+		K[I].X = R1; K[I].Y = R2;
+		K[I].E = S9 * (0.5 + b_RND(1));
 	}
 
 	if (B3 >= 1) {
@@ -733,13 +751,13 @@ INLINE rg_t course_control()
 
 	// KLINGONS MOVE/FIRE ON MOVING STARSHIP . . .
 	for (I = 1; I <= K3; I++) {
-		if (K[I][3] == 0)
+		if (K[I].E == 0)
 			continue;
 
-		set_sector(K[I][1], K[I][2], "   ");
+		set_sector(K[I].X, K[I].Y, "   ");
 		get_empty_sector();
-		K[I][1] = R1; K[I][2] = R2;
-		set_sector(K[I][1], K[I][2], "+K+");
+		K[I].X = R1; K[I].Y = R2;
+		set_sector(K[I].X, K[I].Y, "+K+");
 	}
 
 	if ((ret = klingons_shooting()) != RG_PASS)
@@ -783,9 +801,8 @@ INLINE rg_t course_control()
 
 	// BEGIN MOVING STARSHIP
 	set_sector(S1, S2, "   ");
-	X1 = C[(int)(C1)][1] + (C[(int)(C1 + 1)][1] - C[(int)(C1)][1]) * (C1 - (int)(C1));
+	course_to_delta(&X1, &X2, C1);
 	X = S1; Y = S2;
-	X2 = C[(int)(C1)][2] + (C[(int)(C1 + 1)][2] - C[(int)(C1)][2]) * (C1 - (int)(C1));
 
 	// the original BASIC code used S1/S2 to track starship position
 	// this uses X/Y instead, so S1/S2 can be int
@@ -837,7 +854,7 @@ INLINE rg_t exceeded_quadrant_limits(int N, double X1, double X2)
 	bool X5; // flag - left galaxy
 
 	Q4 = Q1; Q5 = Q2;
-	X = 8 * Q1 + S1 + N * X1; Y = 8 * Q2 + S1 + N * X2;
+	X = 8 * Q1 + S1 + N * X1; Y = 8 * Q2 + S2 + N * X2;
 	Q1 = (int)(X / 8); Q2 = (int)(Y / 8);
 	S1 = (int)(X - Q1 * 8); S2 = (int)(Y - Q2 * 8);
 
@@ -993,29 +1010,29 @@ INLINE rg_t phaser_control()
 	for (I = 1; I <= 3; I++) {
 		int H; // phaser damage to klingon
 
-		if (K[I][3] <= 0)
+		if (K[I].E <= 0)
 			continue;
 
 		H = (int)(H1 / b_FND(I) * (b_RND(1) + 2));
 
-		if (H <= 0.15 * K[I][3]) {
-			printf( "SENSORS SHOW NO DAMAGE TO ENEMY AT  %g , %g\n", K[I][1], K[I][2]);
+		if (H <= 0.15 * K[I].E) {
+			printf( "SENSORS SHOW NO DAMAGE TO ENEMY AT  %d , %d\n", K[I].X, K[I].Y);
 			continue;
 		}
 
-		K[I][3] -= H;
-		printf( " %d UNIT HIT ON KLINGON AT SECTOR %g ,"
-		        " %g\n", H, K[I][1], K[I][2]);
+		K[I].E -= H;
+		printf( " %d UNIT HIT ON KLINGON AT SECTOR %d ,"
+		        " %d\n", H, K[I].X, K[I].Y);
 
-		if (K[I][3] > 0) {
-			printf( "   (SENSORS SHOW %g UNITS REMAINING)\n", K[I][3]);
+		if (K[I].E > 0) {
+			printf( "   (SENSORS SHOW %g UNITS REMAINING)\n", K[I].E);
 			continue;
 		}
 
 		printf( "*** KLINGON DESTROYED ***\n");
 		K3--; K9--;
-		set_sector(K[I][1], K[I][2], "   ");
-		K[I][3] = 0;
+		set_sector(K[I].X, K[I].Y, "   ");
+		K[I].E = 0;
 		G[Q1][Q2] -= 100;
 		Z[Q1][Q2] = G[Q1][Q2];
 
@@ -1064,10 +1081,9 @@ INLINE rg_t photon_torpedo()
 			return RG_MAIN_LOOP;
 		}
 
-		X1 = C[(int)(C1)][1] + (C[(int)(C1 + 1)][1] - C[(int)(C1)][1]) * (C1 - (int)(C1));
+		course_to_delta(&X1, &X2, C1);
 		E -= 2;
 		P--;
-		X2 = C[(int)(C1)][2] + (C[(int)(C1 + 1)][2] - C[(int)(C1)][2]) * (C1 - (int)(C1));
 		X = S1;
 		Y = S2;
 
@@ -1094,14 +1110,14 @@ INLINE rg_t photon_torpedo()
 				return RG_GAME_END_NO_KLINGONS;
 
 			for (I = 1; I <= 3; I++) {
-				if (X3 == K[I][1] && Y3 == K[I][2])
+				if (X3 == K[I].X && Y3 == K[I].Y)
 					break;
 			}
 
 			if (I > 3)
 				I = 3;
 
-			K[I][3] = 0;
+			K[I].E = 0;
 		} else if (is_sector(X, Y, " * ")) {
 			printf( "STAR AT %d , %d ABSORBED TORPEDO ENERGY.\n", X3, Y3);
 
@@ -1265,13 +1281,13 @@ rg_t klingons_shooting()
 		int H,  // phaser damage from klingon
 		    R1; // device number
 
-		if (K[I][3] <= 0)
+		if (K[I].E <= 0)
 			continue;
 
-		H = (int)((K[I][3] / b_FND(I)) * (2 + b_RND(1)));
+		H = (int)((K[I].E / b_FND(I)) * (2 + b_RND(1)));
 		S -= H;
-		K[I][3] /= 3 + b_RND(0);
-		printf(" %d UNIT HIT ON ENTERPRISE FROM SECTOR %g , %g\n", H, K[I][1], K[I][2]);
+		K[I].E /= 3 + b_RND(0);
+		printf(" %d UNIT HIT ON ENTERPRISE FROM SECTOR %d , %d\n", H, K[I].X, K[I].Y);
 
 		if (S <= 0)
 			return RG_GAME_END_ENTERPRISE_DESTROYED;
@@ -1572,10 +1588,10 @@ void dir_calc(dc_t calc_type)
 		printf( "FROM ENTERPRISE TO KLINGON BATTLE CRUSER%s\n", s_X);
 
 		for (I = 1; I <= 3; I++) {
-			if (K[I][3] <= 0)
+			if (K[I].E <= 0)
 				continue;
 
-			actual_dir_calc(S1, S2, K[I][1], K[I][2]);
+			actual_dir_calc(S1, S2, K[I].X, K[I].Y);
 		}
 	} else if (calc_type == DIR_CALC_STARBASE) {
 		if (B3 == 0) {
