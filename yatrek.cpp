@@ -133,8 +133,6 @@ typedef struct
  * S9, E0 are technically always int, but are basically constants so have
  * been left as double for flexibility.
  *
- * Z1, Z2 are usually int, but can go non-int during torpedo tracking.
- *
  */
 
 int    G[9][9],  // galaxy info: 100 * klingons + 10 * starbases + stars
@@ -176,9 +174,7 @@ int    Q1, // enterprise X quadrant
        B5, // starbase Y sector
        B9, // current # of starbases in galaxy
 
-       S3, // # of stars in quadrant
-
-       S8; // position in quadrant string array
+       S3; // # of stars in quadrant
 
 bool D0; // flag - docked
 
@@ -189,12 +185,14 @@ char s_Q[192];  // quadrant string
 
 double b_FND(int I)
 {
-	return sqrt((K[I].X - S1) * (K[I].X - S1) + (K[I].Y - S2) * (K[I].Y - S2));
+	int X = K[I].X - S1;
+	int Y = K[I].Y - S2;
+	return sqrt(X * X + Y * Y);
 }
 
 int b_FNR()
 {
-	return (int)(b_RND(1) * 7.98 + 1.01);
+	return b_RND(1) * 7.98 + 1.01;
 }
 
 int my_strnicmp(const char *a, const char *b, size_t len)
@@ -257,9 +255,9 @@ void galaxy_map(gm_t map_type);
 INLINE void status_report();
 void dir_calc(dc_t calc_type);
 void get_empty_sector();
-void set_sector(double Z1, double Z2, const char *s_A);
+void set_sector(int Z1, int Z2, const char *s_A);
 const char *get_device_name(int R1);
-bool is_sector(double Z1, double Z2, const char *s_A);
+bool is_sector(int Z1, int Z2, const char *s_A);
 const char *get_quadrant_name(int Z4, int Z5);
 const char *get_quadrant_number(int Z5);
 
@@ -268,23 +266,20 @@ void course_to_delta(double *X1, double *X2, double C1)
 	// course calc constants
 	const signed char C[9] = { 0, -1, -1, -1, 0,  1,  1,  1, 0 };
 
-	int C3 = C1;
-	int C2 = C3 - 1;
+	int C2 = C1;
 
-	C1 -= C3;
-
-	*X1 = C[C2] + (C[C3] - C[C2]) * C1;
+	C1 -= C2;
+	C2--;
+	*X1 = C[C2] + (C[C2 + 1] - C[C2]) * C1;
 
 	C2 = (C2 + 6) & 7;
-	C3 = C2 + 1;
-
-	*X2 = C[C2] + (C[C3] - C[C2]) * C1;
+	*X2 = C[C2] + (C[C2 + 1] - C[C2]) * C1;
 }
 
 void linefeeds(int num)
 {
 	while (num--)
-		printf("\n");
+		putchar('\n');
 }
 
 INLINE void instructions()
@@ -428,7 +423,7 @@ INLINE void instructions()
 		while (*p && *p != '$') {
 			if (*p == '\n')
 				lines--;
-			printf("%c", *p++);
+			putchar(*p++);
 		}
 
 		linefeeds(lines);
@@ -467,14 +462,14 @@ int main(int argc, char *argv[])
 	instructions();
 
 	while(1) {
-		printf( "\n\n\n\n\n\n\n\n\n\n\n"
-		        "                                    ,------*------,\n"
-		        "                    ,-------------   '---  ------'\n"
-		        "                     '-------- --'      / /\n"
-		        "                         ,---' '-------/ /--,\n"
-		        "                          '----------------'\n\n"
-		        "                    THE USS ENTERPRISE --- NCC-1701\n"
-		        "\n\n\n\n\n");
+		linefeeds(11);
+		printf("                                    ,------*------,\n"
+		       "                    ,-------------   '---  ------'\n"
+		       "                     '-------- --'      / /\n"
+		       "                         ,---' '-------/ /--,\n"
+		       "                          '----------------'\n\n"
+		       "                    THE USS ENTERPRISE --- NCC-1701\n");
+		linefeeds(5);
 
 		new_galaxy();
 		new_quadrant();
@@ -577,14 +572,14 @@ void new_quadrant()
 		const char *s_G2_1 = get_quadrant_name(Q1, Q2);
 		const char *s_G2_2 = get_quadrant_number(Q2);
 
-		printf( "\n");
+		linefeeds(1);
 		if (T0 == T) {
 			printf( "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n"
 			        "IN THE GALACTIC QUADRANT, '%s%s'.\n", s_G2_1, s_G2_2);
 		} else {
 			printf( "NOW ENTERING %s%s QUADRANT . . .\n", s_G2_1, s_G2_2);
 		}
-		printf( "\n");
+		linefeeds(1);
 
 		K3 = G[Q1][Q2] / 100;
 		B3 = G[Q1][Q2] / 10 % 10;
@@ -648,34 +643,36 @@ INLINE void main_loop()
 		printf( "COMMAND? ");
 		b_INPUT_S(s_A, 4);
 
-		for (I = 1; I <= 9; I++) {
-			if (my_strnicmp(s_A, s_A1 + 3 * I - 3, 3) == 0)
+		for (I = 0; I < 9; I++) {
+			if (my_strnicmp(s_A, s_A1 + 3 * I, 3) == 0)
 				break;
 		}
 
 		ret = RG_MAIN_LOOP;
 
-		if (I == 1) ret = course_control();
-		else if (I == 2) short_range_sensors_dock();
-		else if (I == 3) long_range_sensors();
-		else if (I == 4) ret = phaser_control();
-		else if (I == 5) ret = photon_torpedo();
-		else if (I == 6) shield_control();
-		else if (I == 7) damage_control();
-		else if (I == 8) library_computer();
-		else if (I == 9) ret = RG_GAME_END_RESIGN;
-		else {
-			printf( "ENTER ONE OF THE FOLLOWING:\n"
-			        "  NAV  (TO SET COURSE)\n"
-			        "  SRS  (FOR SHORT RANGE SENSOR SCAN)\n"
-			        "  LRS  (FOR LONG RANGE SENSOR SCAN)\n"
-			        "  PHA  (TO FIRE PHASERS)\n"
-			        "  TOR  (TO FIRE PHOTON TORPEDOES)\n"
-			        "  SHE  (TO RAISE OR LOWER SHIELDS)\n"
-			        "  DAM  (FOR DAMAGE CONTROL REPORTS)\n"
-			        "  COM  (TO CALL ON LIBRARY-COMPUTER)\n"
-			        "  XXX  (TO RESIGN YOUR COMMAND)\n\n");
-			continue;
+		switch(I)
+		{
+			case 0: ret = course_control(); break;
+			case 1: short_range_sensors_dock(); break;
+			case 2: long_range_sensors(); break;
+			case 3: ret = phaser_control(); break;
+			case 4: ret = photon_torpedo(); break;
+			case 5: shield_control(); break;
+			case 6: damage_control(); break;
+			case 7: library_computer(); break;
+			case 8: ret = RG_GAME_END_RESIGN; break;
+			default:
+				printf( "ENTER ONE OF THE FOLLOWING:\n"
+				"  NAV  (TO SET COURSE)\n"
+				"  SRS  (FOR SHORT RANGE SENSOR SCAN)\n"
+				"  LRS  (FOR LONG RANGE SENSOR SCAN)\n"
+				"  PHA  (TO FIRE PHASERS)\n"
+				"  TOR  (TO FIRE PHOTON TORPEDOES)\n"
+				"  SHE  (TO RAISE OR LOWER SHIELDS)\n"
+				"  DAM  (FOR DAMAGE CONTROL REPORTS)\n"
+				"  COM  (TO CALL ON LIBRARY-COMPUTER)\n"
+				"  XXX  (TO RESIGN YOUR COMMAND)\n\n");
+				continue;
 		}
 
 		if (ret != RG_MAIN_LOOP)
@@ -735,7 +732,7 @@ INLINE rg_t course_control()
 		return RG_MAIN_LOOP;
 	}
 
-	N = (int)(W1 * 8 + 0.5);
+	N = W1 * 8 + 0.5;
 	if (E - N < 0) {
 		printf( "ENGINEERING REPORTS   'INSUFFICIENT ENERGY AVAILABLE\n"
 		        "                       FOR MANEUVERING AT WARP %g !'\n", W1);
@@ -782,7 +779,7 @@ INLINE rg_t course_control()
 			D1 = true;
 			printf( "DAMAGE CONTROL REPORT:  ");
 		}
-		printf("%s%s REPAIR COMPLETED.\n", b_SPC(8),get_device_name(I));
+		printf("%s%s REPAIR COMPLETED.\n", b_SPC(8), get_device_name(I));
 	}
 
 	if (b_RND(1) <= 0.2) {
@@ -806,6 +803,8 @@ INLINE rg_t course_control()
 	// the original BASIC code used S1/S2 to track starship position
 	// this uses X/Y instead, so S1/S2 can be int
 	for (I = 1; I <= N; I++) {
+		int S8;
+
 		X += X1; Y += X2;
 
 		if (X < 1 || X >= 9 || Y < 1 || Y >= 9) {
@@ -814,10 +813,10 @@ INLINE rg_t course_control()
 			break;
 		}
 
-		S8 = (int)(X) * 24 + (int)(Y) * 3 - 26;
+		S8 = (int)(X) * 24 + (int)(Y) * 3 - 27;
 
-		if (strncmp(s_Q + S8 - 1, "  ", 2) != 0) {
-			S1 = (int)(X - X1); S2 = (int)(Y - X2);
+		if (strncmp(s_Q + S8, "  ", 2) != 0) {
+			S1 = X - X1; S2 = Y - X2;
 			printf( "WARP ENGINES SHUT DOWN AT "
 			        "SECTOR %d , %d DUE TO BAD NAVAGATION\n", S1, S2);
 			break;
@@ -827,7 +826,7 @@ INLINE rg_t course_control()
 	// if we didn't exit the quadrant or hit something, store the final
 	// coordinates
 	if (I > N) {
-		S1 = (int)(X); S2 = (int)(Y);
+		S1 = X; S2 = Y;
 	}
 
 	set_sector(S1, S2, "<*>");
@@ -847,15 +846,14 @@ INLINE rg_t course_control()
 // EXCEEDED QUADRANT LIMITS
 INLINE rg_t exceeded_quadrant_limits(int N, double X1, double X2)
 {
-	int Q4,  // enterprise X quadrant before moving
-	    Q5;  // enterprise Y quadrant before moving
-	double X, Y;
-	bool X5; // flag - left galaxy
+	int Q4, Q5,  // enterprise X, Y quadrant before moving
+	    X, Y;    // enterprise X, Y absolute sector
+	bool X5;     // flag - left galaxy
 
 	Q4 = Q1; Q5 = Q2;
 	X = 8 * Q1 + S1 + N * X1; Y = 8 * Q2 + S2 + N * X2;
-	Q1 = (int)(X / 8); Q2 = (int)(Y / 8);
-	S1 = (int)(X - Q1 * 8); S2 = (int)(Y - Q2 * 8);
+	Q1 = X / 8; Q2 = Y / 8;
+	S1 = X % 8; S2 = Y % 8;
 
 	if (S1 == 0) {
 		Q1--;
@@ -1005,14 +1003,14 @@ INLINE rg_t phaser_control()
 	if (D[7] < 0)
 		X *= b_RND(1);
 
-	H1 = (int)(X / K3);
+	H1 = X / K3;
 	for (I = 1; I <= 3; I++) {
 		int H; // phaser damage to klingon
 
 		if (K[I].E <= 0)
 			continue;
 
-		H = (int)(H1 / b_FND(I) * (b_RND(1) + 2));
+		H = H1 / b_FND(I) * (b_RND(1) + 2);
 
 		if (H <= 0.15 * K[I].E) {
 			printf( "SENSORS SHOW NO DAMAGE TO ENEMY AT  %d , %d\n", K[I].X, K[I].Y);
@@ -1089,7 +1087,7 @@ INLINE rg_t photon_torpedo()
 		printf( "TORPEDO TRACK:\n");
 		do {
 			X += X1; Y += X2;
-			X3 = (int)(X + 0.5); Y3 = (int)(Y + 0.5);
+			X3 = X + 0.5; Y3 = Y + 0.5;
 
 			if (X3 < 1 || X3 > 8 || Y3 < 1 || Y3 > 8) {
 				printf( "TORPEDO MISSED\n");
@@ -1099,9 +1097,9 @@ INLINE rg_t photon_torpedo()
 			}
 
 			printf( "                %d , %d\n", X3, Y3);
-		} while (is_sector(X, Y, "   "));
+		} while (is_sector(X3, Y3, "   "));
 
-		if (is_sector(X, Y, "+K+")) {
+		if (is_sector(X3, Y3, "+K+")) {
 			printf("*** KLINGON DESTROYED ***\n");
 			K3--; K9--;
 
@@ -1117,13 +1115,13 @@ INLINE rg_t photon_torpedo()
 				I = 3;
 
 			K[I].E = 0;
-		} else if (is_sector(X, Y, " * ")) {
+		} else if (is_sector(X3, Y3, " * ")) {
 			printf( "STAR AT %d , %d ABSORBED TORPEDO ENERGY.\n", X3, Y3);
 
 			if ((ret = klingons_shooting()) != RG_PASS)
 				return ret;
 			return RG_MAIN_LOOP;
-		} else if (is_sector(X, Y, ">!<")) {
+		} else if (is_sector(X3, Y3, ">!<")) {
 			printf( "*** STARBASE DESTROYED ***\n");
 			B3--; B9--;
 
@@ -1140,7 +1138,7 @@ INLINE rg_t photon_torpedo()
 		break;
 	}
 
-	set_sector(X, Y, "   ");
+	set_sector(X3, Y3, "   ");
 	G[Q1][Q2] = K3 * 100 + B3 * 10 + S3;
 	Z[Q1][Q2] = G[Q1][Q2];
 
@@ -1198,7 +1196,7 @@ rg_t starbase_repair()
 	if (D3 == 0)
 		return RG_MAIN_LOOP;
 
-	printf( "\n");
+	linefeeds(1);
 	D3 += D4;
 
 	if (D3 >= 1)
@@ -1233,7 +1231,7 @@ void damage_report()
 		printf("%s%s %g\n", s_G2, b_SPC(25 - strlen(s_G2)), (int)(D[R1] * 100) * 0.01);
 	}
 
-	printf( "\n");
+	linefeeds(1);
 }
 
 // DAMAGE CONTROL
@@ -1283,7 +1281,7 @@ rg_t klingons_shooting()
 		if (K[I].E <= 0)
 			continue;
 
-		H = (int)((K[I].E / b_FND(I)) * (2 + b_RND(1)));
+		H = (K[I].E / b_FND(I)) * (2 + b_RND(1));
 		S -= H;
 		K[I].E /= 3 + b_RND(0);
 		printf(" %d UNIT HIT ON ENTERPRISE FROM SECTOR %d , %d\n", H, K[I].X, K[I].Y);
@@ -1357,7 +1355,7 @@ INLINE void end_of_game(rg_t end_type)
 			break;
 	}
 
-	printf( "\n\n");
+	linefeeds(2);
 
 	if (B9 > 0) {
 		char s_A[4];
@@ -1379,7 +1377,7 @@ INLINE bool next_to_starbase()
 
 	for (I = S1 - 1; I <= S1 + 1; I++) {
 		for (J = S2 - 1; J <= S2 + 1; J++) {
-			if ((int)(I + 0.5) < 1 || (int)(I + 0.5) > 8 || (int)(J + 0.5) < 1 || (int)(J + 0.5) > 8)
+			if (I < 1 || I > 8 || J < 1 || J > 8)
 				continue;
 
 			if (is_sector(I, J, ">!<"))
@@ -1425,14 +1423,17 @@ void short_range_sensors_dock()
 			printf( " %c%c%c", s_Q[J - 1], s_Q[J], s_Q[J + 1]);
 		}
 
-		if (I == 1) printf( "        STARDATE           %g\n", (int)(T * 10) * 0.1);
-		if (I == 2) printf( "        CONDITION          %s\n", s_C);
-		if (I == 3) printf( "        QUADRANT           %d , %d\n", Q1, Q2);
-		if (I == 4) printf( "        SECTOR             %d , %d\n", S1, S2);
-		if (I == 5) printf( "        PHOTON TORPEDOES   %d\n", (int)(P));
-		if (I == 6) printf( "        TOTAL ENERGY       %d\n", (int)(E + S));
-		if (I == 7) printf( "        SHIELDS            %d\n", (int)(S));
-		if (I == 8) printf( "        KLINGONS REMAINING %d\n", (int)(K9));
+		switch(I)
+		{
+			case 1:  printf( "        STARDATE           %g\n", (int)(T * 10) * 0.1); break;
+			case 2:  printf( "        CONDITION          %s\n", s_C); break;
+			case 3:  printf( "        QUADRANT           %d , %d\n", Q1, Q2); break;
+			case 4:  printf( "        SECTOR             %d , %d\n", S1, S2); break;
+			case 5:  printf( "        PHOTON TORPEDOES   %d\n", P); break;
+			case 6:  printf( "        TOTAL ENERGY       %d\n", (int)(E + S)); break;
+			case 7:  printf( "        SHIELDS            %d\n", (int)(S)); break;
+			default: printf( "        KLINGONS REMAINING %d\n", K9); break;
+		}
 	}
 	printf("%s\n", s_O1);
 }
@@ -1455,23 +1456,24 @@ INLINE void library_computer()
 
 		if (A < 0)
 			return;
-		printf( "\n");
+		linefeeds(1);
 
-		if (A == 0) galaxy_map(GALAXY_MAP_RECORD);
-		else if (A == 1) status_report();
-		else if (A == 2) dir_calc(DIR_CALC_KLINGONS);
-		else if (A == 3) dir_calc(DIR_CALC_STARBASE);
-		else if (A == 4) dir_calc(DIR_CALC_INPUT);
-		else if (A == 5) galaxy_map(GALAXY_MAP_NAMES);
-		else {
-			printf( "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n"
-			        "   0 = CUMULATIVE GALACTIC RECORD\n"
-			        "   1 = STATUS REPORT\n"
-			        "   2 = PHOTON TORPEDO DATA\n"
-			        "   3 = STARBASE NAV DATA\n"
-			        "   4 = DIRECTION/DISTANCE CALCULATOR\n"
-			        "   5 = GALAXY 'REGION NAME' MAP\n\n");
-			continue;
+		switch((int)(A)) {
+			case 0: galaxy_map(GALAXY_MAP_RECORD); break;
+			case 1: status_report(); break;
+			case 2: dir_calc(DIR_CALC_KLINGONS); break;
+			case 3: dir_calc(DIR_CALC_STARBASE); break;
+			case 4: dir_calc(DIR_CALC_INPUT); break;
+			case 5: galaxy_map(GALAXY_MAP_NAMES); break;
+			default:
+				printf( "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n"
+					"   0 = CUMULATIVE GALACTIC RECORD\n"
+					"   1 = STATUS REPORT\n"
+					"   2 = PHOTON TORPEDO DATA\n"
+					"   3 = STARBASE NAV DATA\n"
+					"   4 = DIRECTION/DISTANCE CALCULATOR\n"
+					"   5 = GALAXY 'REGION NAME' MAP\n\n");
+				continue;
 		}
 		break;
 	}
@@ -1519,15 +1521,15 @@ void galaxy_map(gm_t map_type)
 			const char *s_G2; // quadrant name
 
 			s_G2 = get_quadrant_name(I, 1);
-			J0 = (int)(12 - 0.5 * strlen(s_G2));
+			J0 = 12 - strlen(s_G2) / 2;
 			printf("%s%s%s", b_SPC(J0), s_G2, b_SPC(J0 + strlen(s_G2) % 2));
 			s_G2 = get_quadrant_name(I, 5);
-			J0 = (int)(12 - 0.5 * strlen(s_G2));
+			J0 = 12 - strlen(s_G2) / 2;
 			printf("%s%s", b_SPC(J0), s_G2);
 		}
 		printf( "\n%s\n", s_O1);
 	}
-	printf( "\n");
+	linefeeds(1);
 }
 
 
@@ -1629,9 +1631,9 @@ void get_empty_sector()
 
 
 // INSERT IN STRING ARRAY FOR QUADRANT
-void set_sector(double Z1, double Z2, const char *s_A)
+void set_sector(int Z1, int Z2, const char *s_A)
 {
-	S8 = (int)(Z2 - 0.5) * 3 + (int)(Z1 - 0.5) * 24;
+	int S8 = (Z2 + Z1 * 8) * 3 - 27;
 
 	if (strlen(s_A) != 3) {
 		printf( "ERROR\n");
@@ -1660,13 +1662,12 @@ const char *get_device_name(int R1)
 
 
 // STRING COMPARISON IN QUADRANT ARRAY
-bool is_sector(double Z1, double Z2, const char *s_A)
+bool is_sector(int Z1, int Z2, const char *s_A)
 {
-	Z1 = (int)(Z1 + 0.5); Z2 = (int)(Z2 + 0.5);
-	S8 = (Z2 - 1) * 3 + (Z1 - 1) * 24 + 1;
-	return (strncmp(s_Q + S8 - 1, s_A, 3) == 0);
-}
+	int S8 = (Z2 + Z1 * 8) * 3 - 27;
 
+	return (strncmp(s_Q + S8, s_A, 3) == 0);
+}
 
 // QUADRANT NAME IN G2$ FROM Z4,Z5 (=Q1,Q2)
 const char *get_quadrant_name(int Z4, int Z5)
@@ -1689,6 +1690,6 @@ const char *get_quadrant_number(int Z5)
 	};
 
 	if (Z5 >= 1 && Z5 <= 8)
-		return quadrant_numbers[(int)(Z5 - 1) % 4];
+		return quadrant_numbers[(Z5 - 1) % 4];
 	return "";
 }
