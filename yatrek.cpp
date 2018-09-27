@@ -51,7 +51,7 @@ INLINE void raninit(ranctx *x, u4 seed)
 
 ranctx rstate;
 
-float b_RND(double R)
+INLINE float b_RND(double R)
 {
 	u4 val;
 
@@ -73,28 +73,28 @@ const char *b_SPC(int len)
 	return space + 80 - len;
 }
 
-void input80(char *s, size_t size)
+INLINE void input80(char *s, size_t size)
 {
 	fflush(stdout);
 	fgets(s, size, stdin);
 	s[size-1] = '\0';
 }
 
-void b_INPUT_1(double *num)
+INLINE void b_INPUT_1(double *num)
 {
 	char s[80];
 	input80(s, sizeof(s));
 	sscanf(s, "%lf", num);
 }
 
-void b_INPUT_2(double *num1, double *num2)
+INLINE void b_INPUT_2(double *num1, double *num2)
 {
 	char s[80];
 	input80(s, sizeof(s));
 	sscanf(s, "%lf,%lf", num1, num2);
 }
 
-void b_INPUT_S(char *out, int size)
+INLINE void b_INPUT_S(char *out, int size)
 {
 	char s[80];
 	int i;
@@ -183,7 +183,7 @@ const char *s_A1 = "NAVSRSLRSPHATORSHEDAMCOMXXX";
 
 char s_Q[192];  // quadrant string
 
-double b_FND(int I)
+INLINE double b_FND(int I)
 {
 	int X = K[I].X - S1;
 	int Y = K[I].Y - S2;
@@ -201,11 +201,8 @@ int my_strnicmp(const char *a, const char *b, size_t len)
 	{
 		int v = toupper(*a) - toupper(*b);
 
-		if (v != 0)
+		if (v || !*a)
 			return v;
-
-		if (!*a)
-			return 0;
 
 		a++;
 		b++;
@@ -254,14 +251,14 @@ INLINE void library_computer();
 void galaxy_map(gm_t map_type);
 INLINE void status_report();
 void dir_calc(dc_t calc_type);
-void get_empty_sector();
-void set_sector(int Z1, int Z2, const char *s_A);
+INLINE void get_empty_sector();
+INLINE void set_sector(int Z1, int Z2, const char *s_A);
 const char *get_device_name(int R1);
-bool is_sector(int Z1, int Z2, const char *s_A);
+INLINE bool is_sector(int Z1, int Z2, const char *s_A);
 const char *get_quadrant_name(int Z4, int Z5);
 const char *get_quadrant_number(int Z5);
 
-void course_to_delta(double *X1, double *X2, double C1)
+INLINE void course_to_delta(double *X1, double *X2, double C1)
 {
 	// course calc constants
 	const signed char C[9] = { 0, -1, -1, -1, 0,  1,  1,  1, 0 };
@@ -276,7 +273,7 @@ void course_to_delta(double *X1, double *X2, double C1)
 	*X2 = C[C2] + (C[C2 + 1] - C[C2]) * C1;
 }
 
-void linefeeds(int num)
+INLINE void linefeeds(int num)
 {
 	while (num--)
 		putchar('\n');
@@ -1228,7 +1225,7 @@ void damage_report()
 
 	for (R1 = 1; R1 <= 8; R1++) {
 		const char *s_G2 = get_device_name(R1);
-		printf("%s%s %g\n", s_G2, b_SPC(25 - strlen(s_G2)), (int)(D[R1] * 100) * 0.01);
+		printf("%s%s%g\n", s_G2, b_SPC(26 - strlen(s_G2)), (int)(D[R1] * 100) * 0.01);
 	}
 
 	linefeeds(1);
@@ -1391,7 +1388,8 @@ INLINE bool next_to_starbase()
 void short_range_sensors_dock()
 {
 	const char *s_C,  // alert state (GREEN, *RED*, YELLOW, DOCKED)
-	           *s_O1; // horizontal rule
+	           *s_O1, // horizontal rule
+		   *p;
 	int I, J;
 
 	D0 = false;
@@ -1418,21 +1416,32 @@ void short_range_sensors_dock()
 
 	s_O1 = "---------------------------------";
 	printf("%s\n", s_O1);
-	for (I = 1; I <= 8; I++) {
-		for (J = (I - 1) * 24 + 1; J <= (I - 1) * 24 + 22; J += 3) {
-			printf( " %c%c%c", s_Q[J - 1], s_Q[J], s_Q[J + 1]);
+
+	p = s_Q;
+	for (I = 0; I < 8; I++) {
+		const char *info[8] = { "STARDATE", "CONDITION", "QUADRANT",
+			"SECTOR", "PHOTON TORPEDOES", "TOTAL ENERGY", "SHIELDS",
+			"KLINGONS REMAINING"
+		};
+
+		for (J = 0; J < 8; J++) {
+			putchar(' ');
+			putchar(*p++);
+			putchar(*p++);
+			putchar(*p++);
 		}
 
+		printf("%s%s%s", b_SPC(8), info[I], b_SPC(19 - strlen(info[I])));
 		switch(I)
 		{
-			case 1:  printf( "        STARDATE           %g\n", (int)(T * 10) * 0.1); break;
-			case 2:  printf( "        CONDITION          %s\n", s_C); break;
-			case 3:  printf( "        QUADRANT           %d , %d\n", Q1, Q2); break;
-			case 4:  printf( "        SECTOR             %d , %d\n", S1, S2); break;
-			case 5:  printf( "        PHOTON TORPEDOES   %d\n", P); break;
-			case 6:  printf( "        TOTAL ENERGY       %d\n", (int)(E + S)); break;
-			case 7:  printf( "        SHIELDS            %d\n", (int)(S)); break;
-			default: printf( "        KLINGONS REMAINING %d\n", K9); break;
+			case 0:  printf("%g\n", (int)(T * 10) * 0.1); break;
+			case 1:  printf("%s\n", s_C); break;
+			case 2:  printf("%d , %d\n", Q1, Q2); break;
+			case 3:  printf("%d , %d\n", S1, S2); break;
+			case 4:  printf("%d\n", P); break;
+			case 5:  printf("%d\n", (int)(E + S)); break;
+			case 6:  printf("%d\n", (int)(S)); break;
+			default: printf("%d\n", K9);
 		}
 	}
 	printf("%s\n", s_O1);
@@ -1489,7 +1498,7 @@ void galaxy_map(gm_t map_type)
 	if (map_type != GALAXY_MAP_RECORD)
 	{
 		// SETUP TO CHANGE CUM GAL RECORD TO GALAXY MAP
-		printf( "                        THE GALAXY\n");
+		printf( "%sTHE GALAXY\n", b_SPC(24));
 	} else {
 		// CUM GALACTIC RECORD
 		// INPUT"DO YOU WANT A HARDCOPY? IS THE TTY ON (Y/N)";A$
@@ -1517,15 +1526,16 @@ void galaxy_map(gm_t map_type)
 				printf("%03d", Z[I][J]);
 			}
 		} else {
-			int J0; // spacing of names on galaxy map
-			const char *s_G2; // quadrant name
+			int J0, J1; // spacing of names on galaxy map
+			const char *s_G2_0, *s_G2_1; // quadrant names
 
-			s_G2 = get_quadrant_name(I, 1);
-			J0 = 12 - strlen(s_G2) / 2;
-			printf("%s%s%s", b_SPC(J0), s_G2, b_SPC(J0 + strlen(s_G2) % 2));
-			s_G2 = get_quadrant_name(I, 5);
-			J0 = 12 - strlen(s_G2) / 2;
-			printf("%s%s", b_SPC(J0), s_G2);
+			s_G2_0 = get_quadrant_name(I, 1);
+			s_G2_1 = get_quadrant_name(I, 5);
+			J0 = 12 - (strlen(s_G2_0) + 1) / 2;
+			J1 = 36 - J0 - strlen(s_G2_0) - (strlen(s_G2_1) + 1) / 2;
+
+			printf("%s%s%s%s", b_SPC(J0), s_G2_0, b_SPC(J1), s_G2_1);
+
 		}
 		printf( "\n%s\n", s_O1);
 	}
@@ -1622,7 +1632,7 @@ void dir_calc(dc_t calc_type)
 
 
 // FIND EMPTY PLACE IN QUADRANT (FOR THINGS)
-void get_empty_sector()
+INLINE void get_empty_sector()
 {
 	do {
 		R1 = b_FNR(); R2 = b_FNR();
@@ -1631,7 +1641,7 @@ void get_empty_sector()
 
 
 // INSERT IN STRING ARRAY FOR QUADRANT
-void set_sector(int Z1, int Z2, const char *s_A)
+INLINE void set_sector(int Z1, int Z2, const char *s_A)
 {
 	int S8 = (Z2 + Z1 * 8) * 3 - 27;
 
@@ -1662,7 +1672,7 @@ const char *get_device_name(int R1)
 
 
 // STRING COMPARISON IN QUADRANT ARRAY
-bool is_sector(int Z1, int Z2, const char *s_A)
+INLINE bool is_sector(int Z1, int Z2, const char *s_A)
 {
 	int S8 = (Z2 + Z1 * 8) * 3 - 27;
 
