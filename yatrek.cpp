@@ -248,15 +248,15 @@ rg_t klingons_shooting();
 INLINE void end_of_game(rg_t end_type);
 void short_range_sensors_dock();
 INLINE void library_computer();
-void galaxy_map(gm_t map_type);
+INLINE void galaxy_map(gm_t map_type);
 INLINE void status_report();
-void dir_calc(dc_t calc_type);
+INLINE void dir_calc(dc_t calc_type);
 INLINE void get_empty_sector();
 INLINE void set_sector(int Z1, int Z2, const char *s_A);
 const char *get_device_name(int R1);
 INLINE bool is_sector(int Z1, int Z2, const char *s_A);
 const char *get_quadrant_name(int Z4, int Z5);
-const char *get_quadrant_number(int Z5);
+INLINE const char *get_quadrant_number(int Z5);
 
 INLINE void course_to_delta(double *X1, double *X2, double C1)
 {
@@ -317,7 +317,7 @@ INLINE void instructions()
 "     VALUES MAY APPROACH 9.0, WHICH         6  7  8\n"
 "     ITSELF IS EQUIVALENT TO 1.0\n"
 "                                            COURSE\n"
-"     ONE WARP FACTOR IS THE SIZE OF \n"
+"     ONE WARP FACTOR IS THE SIZE OF\n"
 "     ONE QUADTANT.  THEREFORE, TO GET\n"
 "     FROM QUADRANT 6,5 TO 5,5, YOU WOULD\n"
 "     USE COURSE 3, WARP FACTOR 1.\n"
@@ -346,7 +346,7 @@ INLINE void instructions()
 "\n"
 "$"
 "\\PHA\\ COMMAND = PHASER CONTROL.\n"
-"     ALLOWS YOU TO DESTROY THE KLINGON BATTLE CRUISERS BY \n"
+"     ALLOWS YOU TO DESTROY THE KLINGON BATTLE CRUISERS BY\n"
 "     ZAPPING THEM WITH SUITABLY LARGE UNITS OF ENERGY TO\n"
 "     DEPLETE THEIR SHIELD POWER.  (REMBER, KLINGONS HAVE\n"
 "     PHASERS TOO!)\n"
@@ -355,10 +355,10 @@ INLINE void instructions()
 "     TORPEDO COURSE IS THE SAME AS USED IN WARP ENGINE CONTROL\n"
 "     IF YOU HIT THE KLINGON VESSEL, HE IS DESTROYED AND\n"
 "     CANNOT FIRE BACK AT YOU.  IF YOU MISS, YOU ARE SUBJECT TO\n"
-"     HIS PHASER FIRE.  IN EITHER CASE, YOU ARE ALSO SUBJECT TO \n"
+"     HIS PHASER FIRE.  IN EITHER CASE, YOU ARE ALSO SUBJECT TO\n"
 "     THE PHASER FIRE OF ALL OTHER KLINGONS IN THE QUADRANT.\n"
 "\n"
-"     THE LIBRARY-COMPUTER (\\COM\\ COMMAND) HAS AN OPTION TO \n"
+"     THE LIBRARY-COMPUTER (\\COM\\ COMMAND) HAS AN OPTION TO\n"
 "     COMPUTE TORPEDO TRAJECTORY FOR YOU (OPTION 2)\n"
 "\n"
 "$"
@@ -385,13 +385,13 @@ INLINE void instructions()
 "        WHICH GIVES DIRECTIONS AND DISTANCE FROM THE ENTERPRISE\n"
 "        TO ALL KLINGONS IN YOUR QUADRANT\n"
 "     OPTION 3 = STARBASE NAV DATA\n"
-"        THIS OPTION GIVES DIRECTION AND DISTANCE TO ANY \n"
+"        THIS OPTION GIVES DIRECTION AND DISTANCE TO ANY\n"
 "        STARBASE WITHIN YOUR QUADRANT\n"
 "     OPTION 4 = DIRECTION/DISTANCE CALCULATOR\n"
 "        THIS OPTION ALLOWS YOU TO ENTER COORDINATES FOR\n"
 "        DIRECTION/DISTANCE CALCULATIONS\n"
 "     OPTION 5 = GALACTIC /REGION NAME/ MAP\n"
-"        THIS OPTION PRINTS THE NAMES OF THE SIXTEEN MAJOR \n"
+"        THIS OPTION PRINTS THE NAMES OF THE SIXTEEN MAJOR\n"
 "        GALACTIC REGIONS REFERRED TO IN THE GAME.\n";
 
 	char s_K[2];
@@ -495,7 +495,7 @@ INLINE void new_galaxy()
 	B9 = 0;
 	K9 = 0;
 	s_X = "";
-	s_X0 = " IS ";
+	s_X0 = "IS";
 
 	// INITIALIZE ENTERPRIZE'S POSITION
 	Q1 = b_FNR(); Q2 = b_FNR();
@@ -540,13 +540,13 @@ INLINE void new_galaxy()
 
 	if (B9 != 1) {
 		s_X = "S";
-		s_X0 = " ARE ";
+		s_X0 = "ARE";
 	}
 
 	printf( "YOUR ORDERS ARE AS FOLLOWS:\n"
 	        "     DESTROY THE %d KLINGON WARSHIPS WHICH HAVE INVADED\n"
 	        "   THE GALAXY BEFORE THEY CAN ATTACK FEDERATION HEADQUARTERS\n"
-	        "   ON STARDATE %g   THIS GIVES YOU %g DAYS.  THERE%s\n"
+	        "   ON STARDATE %g   THIS GIVES YOU %g DAYS.  THERE %s\n"
 	        "   %d STARBASE%s IN THE GALAXY FOR RESUPPLYING YOUR SHIP\n"
 	        "\nHIT ENTER WHEN READY TO ACCEPT COMMAND", K9, T0 + T9, T9, s_X0, B9, s_X);
 	I = b_RND(1);
@@ -572,9 +572,9 @@ void new_quadrant()
 		linefeeds(1);
 		if (T0 == T) {
 			printf( "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n"
-			        "IN THE GALACTIC QUADRANT, '%s%s'.\n", s_G2_1, s_G2_2);
+			        "IN THE GALACTIC QUADRANT, '%s %s'.\n", s_G2_1, s_G2_2);
 		} else {
-			printf( "NOW ENTERING %s%s QUADRANT . . .\n", s_G2_1, s_G2_2);
+			printf( "NOW ENTERING %s %s QUADRANT . . .\n", s_G2_1, s_G2_2);
 		}
 		linefeeds(1);
 
@@ -781,14 +781,14 @@ INLINE rg_t course_control()
 
 	if (b_RND(1) <= 0.2) {
 		int R1 = b_FNR(); // device number
-		printf("DAMAGE CONTROL REPORT:  %s", get_device_name(R1));
+		printf("DAMAGE CONTROL REPORT:  %s ", get_device_name(R1));
 
 		if (b_RND(1) < 0.6) {
 			D[R1] -= b_RND(1) * 5 + 1;
-			printf( " DAMAGED\n\n");
+			printf( "DAMAGED\n\n");
 		} else {
 			D[R1] += b_RND(1) * 3 + 1;
-			printf( " STATE OF REPAIR IMPROVED\n\n");
+			printf( "STATE OF REPAIR IMPROVED\n\n");
 		}
 	}
 
@@ -1310,7 +1310,7 @@ INLINE void end_of_game(rg_t end_type)
 	{
 		case RG_GAME_END_NO_ENERGY:
 			printf( "\n"
-			        "** FATAL ERROR **   YOU'VE JUST STRANDED YOUR SHIP IN \n"
+			        "** FATAL ERROR **   YOU'VE JUST STRANDED YOUR SHIP IN\n"
 			        "SPACE\n"
 			        "YOU HAVE INSUFFICIENT MANEUVERING ENERGY,"
 			        " AND SHIELD CONTROL\n"
@@ -1490,7 +1490,7 @@ INLINE void library_computer()
 
 
 // GALAXY MAP/CUMULATIVE GALACTIC RECORD
-void galaxy_map(gm_t map_type)
+INLINE void galaxy_map(gm_t map_type)
 {
 	int I, J;
 	const char *s_O1; // horizontal rule
@@ -1535,7 +1535,6 @@ void galaxy_map(gm_t map_type)
 			J1 = 36 - J0 - strlen(s_G2_0) - (strlen(s_G2_1) + 1) / 2;
 
 			printf("%s%s%s%s", b_SPC(J0), s_G2_0, b_SPC(J1), s_G2_1);
-
 		}
 		printf( "\n%s\n", s_O1);
 	}
@@ -1583,7 +1582,7 @@ void actual_dir_calc(double C1, double A, double W1, double X)
 
 
 // TORPEDO, BASE NAV, D/D CALCULATOR
-void dir_calc(dc_t calc_type)
+INLINE void dir_calc(dc_t calc_type)
 {
 	if (calc_type == DIR_CALC_KLINGONS)
 	{
@@ -1693,10 +1692,10 @@ const char *get_quadrant_name(int Z4, int Z5)
 	return quadrant_names[8];
 }
 
-const char *get_quadrant_number(int Z5)
+INLINE const char *get_quadrant_number(int Z5)
 {
 	const char *quadrant_numbers[] = {
-		" I", " II", " III", " IV"
+		"I", "II", "III", "IV"
 	};
 
 	if (Z5 >= 1 && Z5 <= 8)
