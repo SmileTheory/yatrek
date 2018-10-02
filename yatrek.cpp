@@ -250,7 +250,9 @@ void short_range_sensors_dock();
 INLINE void library_computer();
 INLINE void galaxy_map(gm_t map_type);
 INLINE void status_report();
-INLINE void dir_calc(dc_t calc_type);
+INLINE void dir_calc_klingons();
+INLINE void dir_calc_starbase();
+INLINE void dir_calc_input();
 INLINE void get_empty_sector();
 INLINE void set_sector(int Z1, int Z2, const char *s_A);
 const char *get_device_name(int R1);
@@ -1470,9 +1472,9 @@ INLINE void library_computer()
 		switch((int)(A)) {
 			case 0: galaxy_map(GALAXY_MAP_RECORD); break;
 			case 1: status_report(); break;
-			case 2: dir_calc(DIR_CALC_KLINGONS); break;
-			case 3: dir_calc(DIR_CALC_STARBASE); break;
-			case 4: dir_calc(DIR_CALC_INPUT); break;
+			case 2: dir_calc_klingons(); break;
+			case 3: dir_calc_starbase(); break;
+			case 4: dir_calc_input(); break;
 			case 5: galaxy_map(GALAXY_MAP_NAMES); break;
 			default:
 				printf( "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n"
@@ -1582,51 +1584,54 @@ void actual_dir_calc(double C1, double A, double W1, double X)
 
 
 // TORPEDO, BASE NAV, D/D CALCULATOR
-INLINE void dir_calc(dc_t calc_type)
+INLINE void dir_calc_klingons()
 {
-	if (calc_type == DIR_CALC_KLINGONS)
-	{
-		int I;
-		const char *s_X; // plural
+	int I;
+	const char *s_X; // plural
 
-		if (K3 <= 0) {
-			no_enemy_ships();
-			return;
-		}
-
-		s_X = (K3 > 1) ? "S" : "";
-		printf( "FROM ENTERPRISE TO KLINGON BATTLE CRUSER%s\n", s_X);
-
-		for (I = 1; I <= 3; I++) {
-			if (K[I].E <= 0)
-				continue;
-
-			actual_dir_calc(S1, S2, K[I].X, K[I].Y);
-		}
-	} else if (calc_type == DIR_CALC_STARBASE) {
-		if (B3 == 0) {
-			printf( "MR. SPOCK REPORTS,  'SENSORS SHOW NO STARBASES IN THIS"
-			        " QUADRANT.'\n");
-			return;
-		}
-
-		printf( "FROM ENTERPRISE TO STARBASE:\n");
-		actual_dir_calc(S1, S2, B4, B5);
-	} else if (calc_type == DIR_CALC_INPUT) {
-		double C1, // initial X coord
-		       A,  // initial Y coord
-		       W1, // final X coord
-		       X;  // final Y coord
-
-		printf( "DIRECTION/DISTANCE CALCULATOR:\n"
-		        "YOU ARE AT QUADRANT  %d , %d  SECTOR  %d , %d\n"
-		        "PLEASE ENTER\n"
-		        "  INITIAL COORDINATES (X,Y)? ", Q1, Q2, S1, S2);
-		b_INPUT_2(&C1, &A);
-		printf( "  FINAL COORDINATES (X,Y)? ");
-		b_INPUT_2(&W1, &X);
-		actual_dir_calc(C1, A, W1, X);
+	if (K3 <= 0) {
+		no_enemy_ships();
+		return;
 	}
+
+	s_X = (K3 > 1) ? "S" : "";
+	printf( "FROM ENTERPRISE TO KLINGON BATTLE CRUSER%s\n", s_X);
+
+	for (I = 1; I <= 3; I++) {
+		if (K[I].E <= 0)
+			continue;
+
+		actual_dir_calc(S1, S2, K[I].X, K[I].Y);
+	}
+}
+
+INLINE void dir_calc_starbase()
+{
+	if (B3 == 0) {
+		printf( "MR. SPOCK REPORTS,  'SENSORS SHOW NO STARBASES IN THIS"
+			" QUADRANT.'\n");
+		return;
+	}
+
+	printf( "FROM ENTERPRISE TO STARBASE:\n");
+	actual_dir_calc(S1, S2, B4, B5);
+}
+
+INLINE void dir_calc_input()
+{
+	double C1, // initial X coord
+		A,  // initial Y coord
+		W1, // final X coord
+		X;  // final Y coord
+
+	printf( "DIRECTION/DISTANCE CALCULATOR:\n"
+		"YOU ARE AT QUADRANT  %d , %d  SECTOR  %d , %d\n"
+		"PLEASE ENTER\n"
+		"  INITIAL COORDINATES (X,Y)? ", Q1, Q2, S1, S2);
+	b_INPUT_2(&C1, &A);
+	printf( "  FINAL COORDINATES (X,Y)? ");
+	b_INPUT_2(&W1, &X);
+	actual_dir_calc(C1, A, W1, X);
 }
 
 
