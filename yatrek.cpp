@@ -113,12 +113,21 @@ INLINE void b_INPUT_S(char *out, int size)
 	out[size - 1]  = '\0';
 }
 
-typedef struct
-{
+typedef struct {
 	int X;
 	int Y;
-	double E;
-} object_t;
+} ivec2;
+
+typedef struct {
+	double X;
+	double Y;
+} vec2;
+
+#define VEC2_COPY(r, a) ((r).X = (a).X, (r).Y = (a).Y)
+#define VEC2_SET(r, x, y) ((r).X = (x), (r).Y = (y))
+#define VEC2_ADD(r, a, b) ((r).X = (a).X + (b).X, (r).Y = (a).Y + (b).Y)
+#define VEC2_SUB(r, a, b) ((r).X = (a).X - (b).X, (r).Y = (a).Y - (b).Y)
+#define VEC2_MAD(r, a, s, b) ((r).X = (a).X + (s) * (b).X, (r).Y = (a).Y + (s) * (b).Y)
 
 /*
  * int variables notes:
@@ -138,7 +147,10 @@ typedef struct
 int    G[9][9],  // galaxy info: 100 * klingons + 10 * starbases + stars
        Z[9][9];  // known galaxy info, same format as G[][]
 
-object_t K[4];   // klingon info
+struct {
+	ivec2 XY[4];
+	double E[4];
+} K;   // klingon info
 
 double D[9];     // devices state of repair, < 0 -> damaged
 
@@ -154,15 +166,11 @@ double T,  // current stardate
 
        D4; // random extra starbase repair time
 
-int    Q1, // enterprise X quadrant
-       Q2, // enterprise Y quadrant
-       S1, // enterprise X sector
-       S2, // enterprise Y sector
+ivec2 Q_12, // enterprise quadrant
+      S_12, // enterprise sector
+      B_45; // starbase sector
 
-       R1, // random sector(): X result
-       R2, // random sector(): Y result
-
-       P,  // current # of torpedoes
+int    P,  // current # of torpedoes
        P0, // max # of torpedoes
 
        K3, // # of klingons in quadrant
@@ -170,8 +178,6 @@ int    Q1, // enterprise X quadrant
        K9, // current # of klingons in galaxy
 
        B3, // # of starbases in quadrant
-       B4, // starbase X sector
-       B5, // starbase Y sector
        B9, // current # of starbases in galaxy
 
        S3; // # of stars in quadrant
@@ -185,9 +191,9 @@ char s_Q[192];  // quadrant string
 
 INLINE double b_FND(int I)
 {
-	int X = K[I].X - S1;
-	int Y = K[I].Y - S2;
-	return sqrt(X * X + Y * Y);
+	ivec2 XY;
+	VEC2_SUB(XY, K.XY[I], S_12);
+	return sqrt(XY.X * XY.X + XY.Y * XY.Y);
 }
 
 int b_FNR()
@@ -217,12 +223,6 @@ typedef enum {
 } gm_t;
 
 typedef enum {
-	DIR_CALC_KLINGONS,
-	DIR_CALC_STARBASE,
-	DIR_CALC_INPUT
-} dc_t;
-
-typedef enum {
 	RG_PASS = 0,  // no end, continue
 	RG_MAIN_LOOP, // return to main loop
 	RG_GAME_END_TIME,
@@ -237,7 +237,7 @@ INLINE void new_galaxy();
 void new_quadrant();
 INLINE void main_loop();
 INLINE rg_t course_control();
-INLINE rg_t exceeded_quadrant_limits(int N, double X1, double X2);
+INLINE rg_t exceeded_quadrant_limits(int N, vec2 X_12);
 void maneuver_energy(int N);
 INLINE void long_range_sensors();
 INLINE rg_t phaser_control();
@@ -253,26 +253,28 @@ INLINE void status_report();
 INLINE void dir_calc_klingons();
 INLINE void dir_calc_starbase();
 INLINE void dir_calc_input();
-INLINE void get_empty_sector();
-INLINE void set_sector(int Z1, int Z2, const char *s_A);
+INLINE ivec2 get_empty_sector();
+INLINE void set_sector(ivec2 Z_12, const char *s_A);
 const char *get_device_name(int R1);
-INLINE bool is_sector(int Z1, int Z2, const char *s_A);
+INLINE bool is_sector(ivec2 Z_12, const char *s_A);
 const char *get_quadrant_name(int Z4, int Z5);
 INLINE const char *get_quadrant_number(int Z5);
 
-INLINE void course_to_delta(double *X1, double *X2, double C1)
+INLINE vec2 course_to_delta(double C1)
 {
 	// course calc constants
 	const signed char C[9] = { 0, -1, -1, -1, 0,  1,  1,  1, 0 };
-
+	vec2 X_12;
 	int C2 = C1;
 
 	C1 -= C2;
 	C2--;
-	*X1 = C[C2] + (C[C2 + 1] - C[C2]) * C1;
+	X_12.X = C[C2] + (C[C2 + 1] - C[C2]) * C1;
 
 	C2 = (C2 + 6) & 7;
-	*X2 = C[C2] + (C[C2 + 1] - C[C2]) * C1;
+	X_12.Y = C[C2] + (C[C2 + 1] - C[C2]) * C1;
+
+	return X_12;
 }
 
 INLINE void linefeeds(int num)
@@ -500,8 +502,8 @@ INLINE void new_galaxy()
 	s_X0 = "IS";
 
 	// INITIALIZE ENTERPRIZE'S POSITION
-	Q1 = b_FNR(); Q2 = b_FNR();
-	S1 = b_FNR(); S2 = b_FNR();
+	Q_12.X = b_FNR(); Q_12.Y = b_FNR();
+	S_12.X = b_FNR(); S_12.Y = b_FNR();
 
 	for (I = 1; I <= 8; I++)
 		D[I] = 0;
@@ -529,13 +531,13 @@ INLINE void new_galaxy()
 		T9 = K9 + 1;
 
 	if (B9 == 0) {
-		if (G[Q1][Q2] < 200) {
-			G[Q1][Q2] += 100;
+		if (G[Q_12.X][Q_12.Y] < 200) {
+			G[Q_12.X][Q_12.Y] += 100;
 			K9++;
 		}
 		B9 = 1;
-		G[Q1][Q2] += 10;
-		Q1 = b_FNR(); Q2 = b_FNR();
+		G[Q_12.X][Q_12.Y] += 10;
+		Q_12.X = b_FNR(); Q_12.Y = b_FNR();
 	}
 
 	K7 = K9;
@@ -565,11 +567,11 @@ void new_quadrant()
 	B3 = 0;
 	S3 = 0;
 	D4 = 0.5 * b_RND(1);
-	Z[Q1][Q2] = G[Q1][Q2];
+	Z[Q_12.X][Q_12.Y] = G[Q_12.X][Q_12.Y];
 
-	if (Q1 >= 1 && Q1 <= 8 && Q2 >= 1 && Q2 <= 8) {
-		const char *s_G2_1 = get_quadrant_name(Q1, Q2);
-		const char *s_G2_2 = get_quadrant_number(Q2);
+	if (Q_12.X >= 1 && Q_12.X <= 8 && Q_12.Y >= 1 && Q_12.Y <= 8) {
+		const char *s_G2_1 = get_quadrant_name(Q_12.X, Q_12.Y);
+		const char *s_G2_2 = get_quadrant_number(Q_12.Y);
 
 		linefeeds(1);
 		if (T0 == T) {
@@ -580,9 +582,9 @@ void new_quadrant()
 		}
 		linefeeds(1);
 
-		K3 = G[Q1][Q2] / 100;
-		B3 = G[Q1][Q2] / 10 % 10;
-		S3 = G[Q1][Q2] % 10;
+		K3 = G[Q_12.X][Q_12.Y] / 100;
+		B3 = G[Q_12.X][Q_12.Y] / 10 % 10;
+		S3 = G[Q_12.X][Q_12.Y] % 10;
 
 		if (K3 != 0) {
 			printf( "COMBAT AREA      CONDITION RED\n");
@@ -592,12 +594,12 @@ void new_quadrant()
 		}
 
 		for (I = 1; I <= 3; I++) {
-			K[I].X = 0; K[I].Y = 0;
+			VEC2_SET(K.XY[I], 0, 0);
 		}
 	}
 
 	for (I = 1; I <= 3; I++) {
-		K[I].E = 0;
+		K.E[I] = 0;
 	}
 
 	for (I = 0; I < 192; I++)
@@ -605,24 +607,22 @@ void new_quadrant()
 
 	// POSITION ENTERPRISE IN QUADRANT, THEN PLACE "K3" KLINGONS, &
 	// "B3" STARBASES, & "S3" STARS ELSEWHERE.
-	set_sector(S1, S2, "<*>");
+	set_sector(S_12, "<*>");
 
 	for (I = 1; I <= K3; I++) {
-		get_empty_sector();
-		set_sector(R1, R2, "+K+");
-		K[I].X = R1; K[I].Y = R2;
-		K[I].E = S9 * (0.5 + b_RND(1));
+		K.XY[I] = get_empty_sector();
+		set_sector(K.XY[I], "+K+");
+		K.E[I] = S9 * (0.5 + b_RND(1));
 	}
 
 	if (B3 >= 1) {
-		get_empty_sector();
-		set_sector(R1, R2, ">!<");
-		B4 = R1; B5 = R2;
+		B_45 = get_empty_sector();
+		set_sector(B_45, ">!<");
 	}
 
 	for (I = 1; I <= S3; I++) {
-		get_empty_sector();
-		set_sector(R1, R2, " * ");
+		ivec2 R_12 = get_empty_sector();
+		set_sector(R_12, " * ");
 	}
 }
 
@@ -690,11 +690,9 @@ INLINE rg_t course_control()
 	double C1, // warp/torpedo course
 	       W1, // warp factor
 	       D6, // damage repair amount when moving
-	       X1, // course X delta
-	       X2, // course Y delta
-	       X,  // enterprise X sector before moving
-	       Y,  // enterprise Y sector before moving
 	       T8; // time for warp travel
+	vec2   X_12, // course delta;
+	       XY;   // enterprise sector while moving
 
 	const char *s_X;
 
@@ -746,13 +744,12 @@ INLINE rg_t course_control()
 
 	// KLINGONS MOVE/FIRE ON MOVING STARSHIP . . .
 	for (I = 1; I <= K3; I++) {
-		if (K[I].E == 0)
+		if (K.E[I] == 0)
 			continue;
 
-		set_sector(K[I].X, K[I].Y, "   ");
-		get_empty_sector();
-		K[I].X = R1; K[I].Y = R2;
-		set_sector(K[I].X, K[I].Y, "+K+");
+		set_sector(K.XY[I], "   ");
+		K.XY[I] = get_empty_sector();
+		set_sector(K.XY[I], "+K+");
 	}
 
 	if ((ret = klingons_shooting()) != RG_PASS)
@@ -795,29 +792,29 @@ INLINE rg_t course_control()
 	}
 
 	// BEGIN MOVING STARSHIP
-	set_sector(S1, S2, "   ");
-	course_to_delta(&X1, &X2, C1);
-	X = S1; Y = S2;
+	set_sector(S_12, "   ");
+	X_12 = course_to_delta(C1);
+	VEC2_COPY(XY, S_12);
 
 	// the original BASIC code used S1/S2 to track starship position
-	// this uses X/Y instead, so S1/S2 can be int
+	// this uses X/Y instead, so S_12 can be int
 	for (I = 1; I <= N; I++) {
 		int S8;
 
-		X += X1; Y += X2;
+		VEC2_ADD(XY, XY, X_12);
 
-		if (X < 1 || X >= 9 || Y < 1 || Y >= 9) {
-			if ((ret = exceeded_quadrant_limits(N, X1, X2)) != RG_PASS)
+		if (XY.X < 1 || XY.X >= 9 || XY.Y < 1 || XY.Y >= 9) {
+			if ((ret = exceeded_quadrant_limits(N, X_12)) != RG_PASS)
 				return ret;
 			break;
 		}
 
-		S8 = (int)(X) * 24 + (int)(Y) * 3 - 27;
+		S8 = (int)(XY.X) * 24 + (int)(XY.Y) * 3 - 27;
 
 		if (strncmp(s_Q + S8, "  ", 2) != 0) {
-			S1 = X - X1; S2 = Y - X2;
+			VEC2_SUB(S_12, XY, X_12);
 			printf( "WARP ENGINES SHUT DOWN AT "
-			        "SECTOR %d , %d DUE TO BAD NAVAGATION\n", S1, S2);
+			        "SECTOR %d , %d DUE TO BAD NAVAGATION\n", S_12.X, S_12.Y);
 			break;
 		}
 	}
@@ -825,10 +822,10 @@ INLINE rg_t course_control()
 	// if we didn't exit the quadrant or hit something, store the final
 	// coordinates
 	if (I > N) {
-		S1 = X; S2 = Y;
+		VEC2_COPY(S_12, XY);
 	}
 
-	set_sector(S1, S2, "<*>");
+	set_sector(S_12, "<*>");
 	maneuver_energy(N);
 
 	T8 = (W1 < 1) ? 0.1 * (int)(10 * W1) : 1;
@@ -843,51 +840,52 @@ INLINE rg_t course_control()
 }
 
 // EXCEEDED QUADRANT LIMITS
-INLINE rg_t exceeded_quadrant_limits(int N, double X1, double X2)
+INLINE rg_t exceeded_quadrant_limits(int N, vec2 X_12)
 {
-	int Q4, Q5,  // enterprise X, Y quadrant before moving
-	    X, Y;    // enterprise X, Y absolute sector
+	ivec2 Q_45,  // enterprise X, Y quadrant before moving
+	        XY;  // enterprise X, Y absolute sector
 	bool X5;     // flag - left galaxy
 
-	Q4 = Q1; Q5 = Q2;
-	X = 8 * Q1 + S1 + N * X1; Y = 8 * Q2 + S2 + N * X2;
-	Q1 = X / 8; Q2 = Y / 8;
-	S1 = X % 8; S2 = Y % 8;
+	Q_45 = Q_12;
+	VEC2_MAD(XY, S_12, 8, Q_12);
+	VEC2_MAD(XY, XY, N, X_12);
+	Q_12.X = XY.X / 8; Q_12.Y = XY.Y / 8;
+	S_12.X = XY.X % 8; S_12.Y = XY.Y % 8;
 
-	if (S1 == 0) {
-		Q1--;
-		S1 = 8;
+	if (S_12.X == 0) {
+		Q_12.X--;
+		S_12.X = 8;
 	}
 
-	if (S2 == 0) {
-		Q2--;
-		S2 = 8;
+	if (S_12.Y == 0) {
+		Q_12.Y--;
+		S_12.Y = 8;
 	}
 
 	X5 = false;
 
-	if (Q1 < 1) {
+	if (Q_12.X < 1) {
 		X5 = true;
-		Q1 = 1;
-		S1 = 1;
+		Q_12.X = 1;
+		S_12.X = 1;
 	}
 
-	if (Q1 > 8) {
+	if (Q_12.X > 8) {
 		X5 = true;
-		Q1 = 8;
-		S1 = 8;
+		Q_12.X = 8;
+		S_12.X = 8;
 	}
 
-	if (Q2 < 1) {
+	if (Q_12.Y < 1) {
 		X5 = true;
-		Q2 = 1;
-		S2 = 1;
+		Q_12.Y = 1;
+		S_12.Y = 1;
 	}
 
-	if (Q2 > 8) {
+	if (Q_12.Y > 8) {
 		X5 = true;
-		Q2 = 8;
-		S2 = 8;
+		Q_12.Y = 8;
+		S_12.Y = 8;
 	}
 
 	if (X5) {
@@ -896,12 +894,12 @@ INLINE rg_t exceeded_quadrant_limits(int N, double X1, double X2)
 		        "  IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.'\n"
 		        "CHIEF ENGINEER SCOTT REPORTS  'WARP ENGINES SHUT DOWN\n"
 		        "  AT SECTOR %d , %d OF QUADRANT %d , %d .'\n",
-			S1, S2, Q1, Q2);
+			S_12.X, S_12.Y, Q_12.X, Q_12.Y);
 		if (T > T0 + T9)
 			return RG_GAME_END_TIME;
 	}
 
-	if (8 * Q1 + Q2 == 8 * Q4 + Q5)
+	if (8 * Q_12.X + Q_12.Y == 8 * Q_45.X + Q_45.Y)
 		return RG_PASS;
 
 	T++;
@@ -942,11 +940,11 @@ INLINE void long_range_sensors()
 		return;
 	}
 
-	printf("LONG RANGE SCAN FOR QUADRANT %d , %d\n", Q1, Q2);
+	printf("LONG RANGE SCAN FOR QUADRANT %d , %d\n", Q_12.X, Q_12.Y);
 	s_O1 = "-------------------";
 	printf("%s\n", s_O1);
-	for (I = Q1 - 1; I <= Q1 + 1; I++) {
-		for (J = Q2 - 1; J <= Q2 + 1; J++) {
+	for (I = Q_12.X - 1; I <= Q_12.X + 1; I++) {
+		for (J = Q_12.Y - 1; J <= Q_12.Y + 1; J++) {
 			printf(": ");
 			if (I > 0 && I < 9 && J > 0 && J < 9) {
 				printf("%03d ", G[I][J]);
@@ -1006,31 +1004,31 @@ INLINE rg_t phaser_control()
 	for (I = 1; I <= 3; I++) {
 		int H; // phaser damage to klingon
 
-		if (K[I].E <= 0)
+		if (K.E[I] <= 0)
 			continue;
 
 		H = H1 / b_FND(I) * (b_RND(1) + 2);
 
-		if (H <= 0.15 * K[I].E) {
-			printf( "SENSORS SHOW NO DAMAGE TO ENEMY AT  %d , %d\n", K[I].X, K[I].Y);
+		if (H <= 0.15 * K.E[I]) {
+			printf( "SENSORS SHOW NO DAMAGE TO ENEMY AT  %d , %d\n", K.XY[I].X, K.XY[I].Y);
 			continue;
 		}
 
-		K[I].E -= H;
+		K.E[I] -= H;
 		printf( " %d UNIT HIT ON KLINGON AT SECTOR %d ,"
-		        " %d\n", H, K[I].X, K[I].Y);
+		        " %d\n", H, K.XY[I].X, K.XY[I].Y);
 
-		if (K[I].E > 0) {
-			printf( "   (SENSORS SHOW %g UNITS REMAINING)\n", K[I].E);
+		if (K.E[I] > 0) {
+			printf( "   (SENSORS SHOW %g UNITS REMAINING)\n", K.E[I]);
 			continue;
 		}
 
 		printf( "*** KLINGON DESTROYED ***\n");
 		K3--; K9--;
-		set_sector(K[I].X, K[I].Y, "   ");
-		K[I].E = 0;
-		G[Q1][Q2] -= 100;
-		Z[Q1][Q2] = G[Q1][Q2];
+		set_sector(K.XY[I], "   ");
+		K.E[I] = 0;
+		G[Q_12.X][Q_12.Y] -= 100;
+		Z[Q_12.X][Q_12.Y] = G[Q_12.X][Q_12.Y];
 
 		if (K9 <= 0)
 			return RG_GAME_END_NO_KLINGONS;
@@ -1046,14 +1044,11 @@ INLINE rg_t phaser_control()
 INLINE rg_t photon_torpedo()
 {
 	rg_t ret;
-	int I,  // loop variable
-	    X3, // torpedo X sector (int)
-	    Y3; // torpedo Y sector (int)
-	double X,  // torpedo X sector (non-int)
-	       Y,  // torpedo Y sector (non-int)
-	       X1, // course X delta
-	       X2, // course Y delta
-	       C1; // torpedo course
+	int I;     // loop variable
+	double C1; // torpedo course
+	ivec2 XY3; // torpedo sector (int)
+	vec2 XY,   // torpedo sector (non-int)
+	     X_12; // course delta
 
 	if (P <= 0) {
 		printf( "ALL PHOTON TORPEDOES EXPENDED\n");
@@ -1077,28 +1072,27 @@ INLINE rg_t photon_torpedo()
 			return RG_MAIN_LOOP;
 		}
 
-		course_to_delta(&X1, &X2, C1);
+		X_12 = course_to_delta(C1);
 		E -= 2;
 		P--;
-		X = S1;
-		Y = S2;
+		VEC2_COPY(XY, S_12);
 
 		printf( "TORPEDO TRACK:\n");
 		do {
-			X += X1; Y += X2;
-			X3 = X + 0.5; Y3 = Y + 0.5;
+			VEC2_ADD(XY, XY, X_12);
+			XY3.X = XY.X + 0.5; XY3.Y = XY.Y + 0.5;
 
-			if (X3 < 1 || X3 > 8 || Y3 < 1 || Y3 > 8) {
+			if (XY3.X < 1 || XY3.X > 8 || XY3.Y < 1 || XY3.Y > 8) {
 				printf( "TORPEDO MISSED\n");
 				if ((ret = klingons_shooting()) != RG_PASS)
 					return ret;
 				return RG_MAIN_LOOP;
 			}
 
-			printf( "                %d , %d\n", X3, Y3);
-		} while (is_sector(X3, Y3, "   "));
+			printf( "                %d , %d\n", XY3.X, XY3.Y);
+		} while (is_sector(XY3, "   "));
 
-		if (is_sector(X3, Y3, "+K+")) {
+		if (is_sector(XY3, "+K+")) {
 			printf("*** KLINGON DESTROYED ***\n");
 			K3--; K9--;
 
@@ -1106,21 +1100,21 @@ INLINE rg_t photon_torpedo()
 				return RG_GAME_END_NO_KLINGONS;
 
 			for (I = 1; I <= 3; I++) {
-				if (X3 == K[I].X && Y3 == K[I].Y)
+				if (XY3.X == K.XY[I].X && XY3.Y == K.XY[I].Y)
 					break;
 			}
 
 			if (I > 3)
 				I = 3;
 
-			K[I].E = 0;
-		} else if (is_sector(X3, Y3, " * ")) {
-			printf( "STAR AT %d , %d ABSORBED TORPEDO ENERGY.\n", X3, Y3);
+			K.E[I] = 0;
+		} else if (is_sector(XY3, " * ")) {
+			printf( "STAR AT %d , %d ABSORBED TORPEDO ENERGY.\n", XY3.X, XY3.Y);
 
 			if ((ret = klingons_shooting()) != RG_PASS)
 				return ret;
 			return RG_MAIN_LOOP;
-		} else if (is_sector(X3, Y3, ">!<")) {
+		} else if (is_sector(XY3, ">!<")) {
 			printf( "*** STARBASE DESTROYED ***\n");
 			B3--; B9--;
 
@@ -1137,9 +1131,9 @@ INLINE rg_t photon_torpedo()
 		break;
 	}
 
-	set_sector(X3, Y3, "   ");
-	G[Q1][Q2] = K3 * 100 + B3 * 10 + S3;
-	Z[Q1][Q2] = G[Q1][Q2];
+	set_sector(XY3, "   ");
+	G[Q_12.X][Q_12.Y] = K3 * 100 + B3 * 10 + S3;
+	Z[Q_12.X][Q_12.Y] = G[Q_12.X][Q_12.Y];
 
 	if ((ret = klingons_shooting()) != RG_PASS)
 		return ret;
@@ -1277,13 +1271,13 @@ rg_t klingons_shooting()
 		int H,  // phaser damage from klingon
 		    R1; // device number
 
-		if (K[I].E <= 0)
+		if (K.E[I] <= 0)
 			continue;
 
-		H = (K[I].E / b_FND(I)) * (2 + b_RND(1));
+		H = (K.E[I] / b_FND(I)) * (2 + b_RND(1));
 		S -= H;
-		K[I].E /= 3 + b_RND(0);
-		printf(" %d UNIT HIT ON ENTERPRISE FROM SECTOR %d , %d\n", H, K[I].X, K[I].Y);
+		K.E[I] /= 3 + b_RND(0);
+		printf(" %d UNIT HIT ON ENTERPRISE FROM SECTOR %d , %d\n", H, K.XY[I].X, K.XY[I].Y);
 
 		if (S <= 0)
 			return RG_GAME_END_ENTERPRISE_DESTROYED;
@@ -1372,14 +1366,14 @@ INLINE void end_of_game(rg_t end_type)
 
 INLINE bool next_to_starbase()
 {
-	int I, J;
+	ivec2 IJ;
 
-	for (I = S1 - 1; I <= S1 + 1; I++) {
-		for (J = S2 - 1; J <= S2 + 1; J++) {
-			if (I < 1 || I > 8 || J < 1 || J > 8)
+	for (IJ.X = S_12.X - 1; IJ.X <= S_12.X + 1; IJ.X++) {
+		for (IJ.Y = S_12.Y - 1; IJ.Y <= S_12.Y + 1; IJ.Y++) {
+			if (IJ.X < 1 || IJ.X > 8 || IJ.Y < 1 || IJ.Y > 8)
 				continue;
 
-			if (is_sector(I, J, ">!<"))
+			if (is_sector(IJ, ">!<"))
 				return true;
 		}
 	}
@@ -1438,8 +1432,8 @@ void short_range_sensors_dock()
 		{
 			case 0:  printf("%g\n", (int)(T * 10) * 0.1); break;
 			case 1:  printf("%s\n", s_C); break;
-			case 2:  printf("%d , %d\n", Q1, Q2); break;
-			case 3:  printf("%d , %d\n", S1, S2); break;
+			case 2:  printf("%d , %d\n", Q_12.X, Q_12.Y); break;
+			case 3:  printf("%d , %d\n", S_12.X, S_12.Y); break;
 			case 4:  printf("%d\n", P); break;
 			case 5:  printf("%d\n", (int)(E + S)); break;
 			case 6:  printf("%d\n", (int)(S)); break;
@@ -1508,7 +1502,7 @@ INLINE void galaxy_map(gm_t map_type)
 		printf( "\n"
 		        "        "
 		        "COMPUTER RECORD OF GALAXY FOR QUADRANT %d , %d\n"
-		        "\n", Q1, Q2);
+		        "\n", Q_12.X, Q_12.Y);
 	}
 
 	printf( "       1     2     3     4     5     6     7     8\n");
@@ -1598,10 +1592,10 @@ INLINE void dir_calc_klingons()
 	printf( "FROM ENTERPRISE TO KLINGON BATTLE CRUSER%s\n", s_X);
 
 	for (I = 1; I <= 3; I++) {
-		if (K[I].E <= 0)
+		if (K.E[I] <= 0)
 			continue;
 
-		actual_dir_calc(S1, S2, K[I].X, K[I].Y);
+		actual_dir_calc(S_12.X, S_12.Y, K.XY[I].X, K.XY[I].Y);
 	}
 }
 
@@ -1614,7 +1608,7 @@ INLINE void dir_calc_starbase()
 	}
 
 	printf( "FROM ENTERPRISE TO STARBASE:\n");
-	actual_dir_calc(S1, S2, B4, B5);
+	actual_dir_calc(S_12.X, S_12.Y, B_45.X, B_45.Y);
 }
 
 INLINE void dir_calc_input()
@@ -1627,7 +1621,7 @@ INLINE void dir_calc_input()
 	printf( "DIRECTION/DISTANCE CALCULATOR:\n"
 		"YOU ARE AT QUADRANT  %d , %d  SECTOR  %d , %d\n"
 		"PLEASE ENTER\n"
-		"  INITIAL COORDINATES (X,Y)? ", Q1, Q2, S1, S2);
+		"  INITIAL COORDINATES (X,Y)? ", Q_12.X, Q_12.Y, S_12.X, S_12.Y);
 	b_INPUT_2(&C1, &A);
 	printf( "  FINAL COORDINATES (X,Y)? ");
 	b_INPUT_2(&W1, &X);
@@ -1636,18 +1630,22 @@ INLINE void dir_calc_input()
 
 
 // FIND EMPTY PLACE IN QUADRANT (FOR THINGS)
-INLINE void get_empty_sector()
+INLINE ivec2 get_empty_sector()
 {
+	ivec2 R_12;
+
 	do {
-		R1 = b_FNR(); R2 = b_FNR();
-	} while (!is_sector(R1, R2, "   "));
+		R_12.X = b_FNR(); R_12.Y = b_FNR();
+	} while (!is_sector(R_12, "   "));
+
+	return R_12;
 }
 
 
 // INSERT IN STRING ARRAY FOR QUADRANT
-INLINE void set_sector(int Z1, int Z2, const char *s_A)
+INLINE void set_sector(ivec2 Z_12, const char *s_A)
 {
-	int S8 = (Z2 + Z1 * 8) * 3 - 27;
+	int S8 = (Z_12.Y + Z_12.X * 8) * 3 - 27;
 
 	if (strlen(s_A) != 3) {
 		printf( "ERROR\n");
@@ -1676,9 +1674,9 @@ const char *get_device_name(int R1)
 
 
 // STRING COMPARISON IN QUADRANT ARRAY
-INLINE bool is_sector(int Z1, int Z2, const char *s_A)
+INLINE bool is_sector(ivec2 Z_12, const char *s_A)
 {
-	int S8 = (Z2 + Z1 * 8) * 3 - 27;
+	int S8 = (Z_12.Y + Z_12.X * 8) * 3 - 27;
 
 	return (strncmp(s_Q + S8, s_A, 3) == 0);
 }
