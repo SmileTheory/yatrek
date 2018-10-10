@@ -477,12 +477,12 @@ int main(int argc, char *argv[])
 
 	while(1) {
 		linefeeds(11);
-		printf("                                    ,------*------,\n"
-		       "                    ,-------------   '---  ------'\n"
-		       "                     '-------- --'      / /\n"
-		       "                         ,---' '-------/ /--,\n"
-		       "                          '----------------'\n\n"
-		       "                    THE USS ENTERPRISE --- NCC-1701\n");
+		puts("                                    ,------*------,\n"
+		     "                    ,-------------   '---  ------'\n"
+		     "                     '-------- --'      / /\n"
+		     "                         ,---' '-------/ /--,\n"
+		     "                          '----------------'\n\n"
+		     "                    THE USS ENTERPRISE --- NCC-1701");
 		linefeeds(5);
 
 		new_galaxy();
@@ -560,12 +560,12 @@ INLINE void new_galaxy()
 		s_X0 = "ARE";
 	}
 
-	printf( "YOUR ORDERS ARE AS FOLLOWS:\n"
-	        "     DESTROY THE %d KLINGON WARSHIPS WHICH HAVE INVADED\n"
-	        "   THE GALAXY BEFORE THEY CAN ATTACK FEDERATION HEADQUARTERS\n"
-	        "   ON STARDATE %g   THIS GIVES YOU %g DAYS.  THERE %s\n"
-	        "   %d STARBASE%s IN THE GALAXY FOR RESUPPLYING YOUR SHIP\n"
-	        "\nHIT ENTER WHEN READY TO ACCEPT COMMAND", K9, T0 + T9, T9, s_X0, B9, s_X);
+	printf("YOUR ORDERS ARE AS FOLLOWS:\n"
+	       "     DESTROY THE %d KLINGON WARSHIPS WHICH HAVE INVADED\n"
+	       "   THE GALAXY BEFORE THEY CAN ATTACK FEDERATION HEADQUARTERS\n"
+	       "   ON STARDATE %g   THIS GIVES YOU %g DAYS.  THERE %s\n"
+	       "   %d STARBASE%s IN THE GALAXY FOR RESUPPLYING YOUR SHIP\n"
+	       "\nHIT ENTER WHEN READY TO ACCEPT COMMAND", K9, T0 + T9, T9, s_X0, B9, s_X);
 	I = b_RND(1);
 	b_INPUT_S(s_A, 3);
 }
@@ -588,10 +588,10 @@ void new_quadrant()
 
 		linefeeds(1);
 		if (T0 == T) {
-			printf( "YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n"
-			        "IN THE GALACTIC QUADRANT, '%s %s'.\n", s_G2_1, s_G2_2);
+			printf("YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n"
+			       "IN THE GALACTIC QUADRANT, '%s %s'.\n", s_G2_1, s_G2_2);
 		} else {
-			printf( "NOW ENTERING %s %s QUADRANT . . .\n", s_G2_1, s_G2_2);
+			printf("NOW ENTERING %s %s QUADRANT . . .\n", s_G2_1, s_G2_2);
 		}
 		linefeeds(1);
 
@@ -600,10 +600,10 @@ void new_quadrant()
 		S3 = G[Q_12.X][Q_12.Y] % 10;
 
 		if (K3 != 0) {
-			printf( "COMBAT AREA      CONDITION RED\n");
+			printf("COMBAT AREA      CONDITION RED\n");
 
 			if (S <= 200)
-				printf( "   SHIELDS DANGEROUSLY LOW\n");
+				printf("   SHIELDS DANGEROUSLY LOW\n");
 		}
 
 		for (I = 1; I <= 3; I++) {
@@ -650,7 +650,7 @@ INLINE void main_loop()
 			return;
 		}
 
-		printf( "COMMAND? ");
+		printf("COMMAND? ");
 		b_INPUT_S(s_A, 4);
 
 		for (I = 0; I < 9; I++) {
@@ -672,16 +672,16 @@ INLINE void main_loop()
 			case 7: library_computer(); break;
 			case 8: ret = RG_GAME_END_RESIGN; break;
 			default:
-				printf( "ENTER ONE OF THE FOLLOWING:\n"
-				"  NAV  (TO SET COURSE)\n"
-				"  SRS  (FOR SHORT RANGE SENSOR SCAN)\n"
-				"  LRS  (FOR LONG RANGE SENSOR SCAN)\n"
-				"  PHA  (TO FIRE PHASERS)\n"
-				"  TOR  (TO FIRE PHOTON TORPEDOES)\n"
-				"  SHE  (TO RAISE OR LOWER SHIELDS)\n"
-				"  DAM  (FOR DAMAGE CONTROL REPORTS)\n"
-				"  COM  (TO CALL ON LIBRARY-COMPUTER)\n"
-				"  XXX  (TO RESIGN YOUR COMMAND)\n\n");
+				puts("ENTER ONE OF THE FOLLOWING:\n"
+				     "  NAV  (TO SET COURSE)\n"
+				     "  SRS  (FOR SHORT RANGE SENSOR SCAN)\n"
+				     "  LRS  (FOR LONG RANGE SENSOR SCAN)\n"
+				     "  PHA  (TO FIRE PHASERS)\n"
+				     "  TOR  (TO FIRE PHOTON TORPEDOES)\n"
+				     "  SHE  (TO RAISE OR LOWER SHIELDS)\n"
+				     "  DAM  (FOR DAMAGE CONTROL REPORTS)\n"
+				     "  COM  (TO CALL ON LIBRARY-COMPUTER)\n"
+				     "  XXX  (TO RESIGN YOUR COMMAND)\n");
 				continue;
 		}
 
@@ -712,42 +712,42 @@ INLINE rg_t course_control()
 
 	bool D1;   // flag - damage control report started
 
-	printf( "COURSE (0-9)? ");
+	printf("COURSE (0-9)? ");
 	b_INPUT_1(&C1);
 
 	if (C1 == 9)
 		C1 = 1;
 
 	if (C1 < 1 || C1 >= 9) {
-		printf( "   LT. SULU REPORTS, 'INCORRECT COURSE DATA, SIR!'\n");
+		puts("   LT. SULU REPORTS, 'INCORRECT COURSE DATA, SIR!'");
 		return RG_MAIN_LOOP;
 	}
 
 	s_X = (D[DEVICE_WARP_ENGINES] < 0) ? "0.2" : "8";
-	printf( "WARP FACTOR (0-%s)? ", s_X);
+	printf("WARP FACTOR (0-%s)? ", s_X);
 	b_INPUT_1(&W1);
 
 	if (D[DEVICE_WARP_ENGINES] < 0 && W1 > 0.2) {
-		printf( "WARP ENGINES ARE DAMAGED.  MAXIUM SPEED = WARP 0.2\n");
+		puts("WARP ENGINES ARE DAMAGED.  MAXIUM SPEED = WARP 0.2");
 		return RG_MAIN_LOOP;
 	}
 
 	if (W1 <= 0 || W1 > 8) {
 		if (W1 != 0) {
-			printf( "   CHIEF ENGINEER SCOTT REPORTS 'THE ENGINES WON'T TAKE"
-			        " WARP  %g !'\n", W1);
+			printf("   CHIEF ENGINEER SCOTT REPORTS 'THE ENGINES WON'T TAKE"
+			       " WARP  %g !'\n", W1);
 		}
 		return RG_MAIN_LOOP;
 	}
 
 	N = W1 * 8 + 0.5;
 	if (E - N < 0) {
-		printf( "ENGINEERING REPORTS   'INSUFFICIENT ENERGY AVAILABLE\n"
-		        "                       FOR MANEUVERING AT WARP %g !'\n", W1);
+		printf("ENGINEERING REPORTS   'INSUFFICIENT ENERGY AVAILABLE\n"
+		       "                       FOR MANEUVERING AT WARP %g !'\n", W1);
 
 		if (S >= N - E && D[DEVICE_SHIELD_CONTROL] >= 0) {
-			printf( "DEFLECTOR CONTROL ROOM ACKNOWLEDGES %g UNITS OF ENERGY\n"
-			        "                         PRESENTLY DEPLOYED TO SHIELDS.\n", S);
+			printf("DEFLECTOR CONTROL ROOM ACKNOWLEDGES %g UNITS OF ENERGY\n"
+			       "                         PRESENTLY DEPLOYED TO SHIELDS.\n", S);
 		}
 
 		return RG_MAIN_LOOP;
@@ -783,7 +783,7 @@ INLINE rg_t course_control()
 
 		if (!D1) {
 			D1 = true;
-			printf( "DAMAGE CONTROL REPORT:  ");
+			printf("DAMAGE CONTROL REPORT:  ");
 		}
 		printf("%s%s REPAIR COMPLETED.\n", b_SPC(8), get_device_name(I));
 	}
@@ -794,10 +794,10 @@ INLINE rg_t course_control()
 
 		if (b_RND(1) < 0.6) {
 			D[R1] -= b_RND(1) * 5 + 1;
-			printf( "DAMAGED\n\n");
+			puts("DAMAGED\n");
 		} else {
 			D[R1] += b_RND(1) * 3 + 1;
-			printf( "STATE OF REPAIR IMPROVED\n\n");
+			puts("STATE OF REPAIR IMPROVED\n");
 		}
 	}
 
@@ -823,8 +823,8 @@ INLINE rg_t course_control()
 
 		if (strncmp(s_Q + S8, "  ", 2) != 0) {
 			VEC2_SUB(S_12, XY, X_12);
-			printf( "WARP ENGINES SHUT DOWN AT "
-			        "SECTOR %d , %d DUE TO BAD NAVAGATION\n", S_12.X, S_12.Y);
+			printf("WARP ENGINES SHUT DOWN AT "
+			       "SECTOR %d , %d DUE TO BAD NAVAGATION\n", S_12.X, S_12.Y);
 			break;
 		}
 	}
@@ -899,12 +899,12 @@ INLINE rg_t exceeded_quadrant_limits(int N, vec2 X_12)
 	}
 
 	if (X5) {
-		printf( "LT. UHURA REPORTS MESSAGE FROM STARFLEET COMMAND:\n"
-		        "  'PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER\n"
-		        "  IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.'\n"
-		        "CHIEF ENGINEER SCOTT REPORTS  'WARP ENGINES SHUT DOWN\n"
-		        "  AT SECTOR %d , %d OF QUADRANT %d , %d .'\n",
-			S_12.X, S_12.Y, Q_12.X, Q_12.Y);
+		printf("LT. UHURA REPORTS MESSAGE FROM STARFLEET COMMAND:\n"
+		       "  'PERMISSION TO ATTEMPT CROSSING OF GALACTIC PERIMETER\n"
+		       "  IS HEREBY *DENIED*.  SHUT DOWN YOUR ENGINES.'\n"
+		       "CHIEF ENGINEER SCOTT REPORTS  'WARP ENGINES SHUT DOWN\n"
+		       "  AT SECTOR %d , %d OF QUADRANT %d , %d .'\n",
+		       S_12.X, S_12.Y, Q_12.X, Q_12.Y);
 		if (T > T0 + T9)
 			return RG_GAME_END_TIME;
 	}
@@ -928,7 +928,7 @@ void maneuver_energy(int N)
 	if (E >= 0)
 		return;
 
-	printf("SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER.\n");
+	puts("SHIELD CONTROL SUPPLIES ENERGY TO COMPLETE THE MANEUVER.");
 	S += E;
 	E = 0;
 
@@ -946,13 +946,13 @@ INLINE void long_range_sensors()
 	const char *s_O1; // horizontal rule
 
 	if (D[DEVICE_LONG_RANGE_SENSORS] < 0) {
-		printf("LONG RANGE SENSORS ARE INOPERABLE\n");
+		puts("LONG RANGE SENSORS ARE INOPERABLE");
 		return;
 	}
 
 	printf("LONG RANGE SCAN FOR QUADRANT %d , %d\n", Q_12.X, Q_12.Y);
 	s_O1 = "-------------------";
-	printf("%s\n", s_O1);
+	puts(s_O1);
 	for (I = Q_12.X - 1; I <= Q_12.X + 1; I++) {
 		for (J = Q_12.Y - 1; J <= Q_12.Y + 1; J++) {
 			printf(": ");
@@ -963,7 +963,7 @@ INLINE void long_range_sensors()
 				printf("*** ");
 			}
 		}
-		printf( ":\n%s\n", s_O1);
+		printf(":\n%s\n", s_O1);
 	}
 }
 
@@ -983,7 +983,7 @@ INLINE rg_t phaser_control()
 	double X; // energy to fire
 
 	if (D[DEVICE_PHASER_CONTROL] < 0) {
-		printf("PHASERS INOPERATIVE\n");
+		puts("PHASERS INOPERATIVE");
 		return RG_MAIN_LOOP;
 	}
 
@@ -993,7 +993,7 @@ INLINE rg_t phaser_control()
 	}
 
 	if (D[DEVICE_LIBRARY_COMPUTER] < 0)
-		printf("COMPUTER FAILURE HAMPERS ACCURACY\n");
+		puts("COMPUTER FAILURE HAMPERS ACCURACY");
 
 	printf("PHASERS LOCKED ON TARGET;  ");
 
@@ -1022,20 +1022,20 @@ INLINE rg_t phaser_control()
 		H = H1 / b_FND(I) * (b_RND(1) + 2);
 
 		if (H <= 0.15 * K.E[I]) {
-			printf( "SENSORS SHOW NO DAMAGE TO ENEMY AT  %d , %d\n", K.XY[I].X, K.XY[I].Y);
+			printf("SENSORS SHOW NO DAMAGE TO ENEMY AT  %d , %d\n", K.XY[I].X, K.XY[I].Y);
 			continue;
 		}
 
 		K.E[I] -= H;
-		printf( " %d UNIT HIT ON KLINGON AT SECTOR %d ,"
-		        " %d\n", H, K.XY[I].X, K.XY[I].Y);
+		printf(" %d UNIT HIT ON KLINGON AT SECTOR %d ,"
+		       " %d\n", H, K.XY[I].X, K.XY[I].Y);
 
 		if (K.E[I] > 0) {
-			printf( "   (SENSORS SHOW %g UNITS REMAINING)\n", K.E[I]);
+			printf("   (SENSORS SHOW %g UNITS REMAINING)\n", K.E[I]);
 			continue;
 		}
 
-		printf( "*** KLINGON DESTROYED ***\n");
+		puts("*** KLINGON DESTROYED ***");
 		K3--; K9--;
 		set_sector(K.XY[I], "   ");
 		K.E[I] = 0;
@@ -1063,24 +1063,24 @@ INLINE rg_t photon_torpedo()
 	     X_12; // course delta
 
 	if (P <= 0) {
-		printf( "ALL PHOTON TORPEDOES EXPENDED\n");
+		puts("ALL PHOTON TORPEDOES EXPENDED");
 		return RG_MAIN_LOOP;
 	}
 
 	if (D[DEVICE_PHOTON_TUBES] < 0) {
-		printf( "PHOTON TUBES ARE NOT OPERATIONAL\n");
+		puts("PHOTON TUBES ARE NOT OPERATIONAL");
 		return RG_MAIN_LOOP;
 	}
 
 	while(1) {
-		printf( "PHOTON TORPEDO COURSE (1-9)? ");
+		printf("PHOTON TORPEDO COURSE (1-9)? ");
 		b_INPUT_1(&C1);
 
 		if (C1 == 9)
 			C1 = 1;
 
 		if (C1 < 1 || C1 >= 9) {
-			printf( "ENSIGN CHEKOV REPORTS,  'INCORRECT COURSE DATA, SIR!'\n");
+			puts("ENSIGN CHEKOV REPORTS,  'INCORRECT COURSE DATA, SIR!'");
 			return RG_MAIN_LOOP;
 		}
 
@@ -1089,23 +1089,23 @@ INLINE rg_t photon_torpedo()
 		P--;
 		VEC2_COPY(XY, S_12);
 
-		printf( "TORPEDO TRACK:\n");
+		puts("TORPEDO TRACK:");
 		do {
 			VEC2_ADD(XY, XY, X_12);
 			XY3.X = XY.X + 0.5; XY3.Y = XY.Y + 0.5;
 
 			if (XY3.X < 1 || XY3.X > 8 || XY3.Y < 1 || XY3.Y > 8) {
-				printf( "TORPEDO MISSED\n");
+				puts("TORPEDO MISSED");
 				if ((ret = klingons_shooting()) != RG_PASS)
 					return ret;
 				return RG_MAIN_LOOP;
 			}
 
-			printf( "                %d , %d\n", XY3.X, XY3.Y);
+			printf("                %d , %d\n", XY3.X, XY3.Y);
 		} while (is_sector(XY3, "   "));
 
 		if (is_sector(XY3, "+K+")) {
-			printf("*** KLINGON DESTROYED ***\n");
+			puts("*** KLINGON DESTROYED ***");
 			K3--; K9--;
 
 			if (K9 <= 0)
@@ -1121,20 +1121,20 @@ INLINE rg_t photon_torpedo()
 
 			K.E[I] = 0;
 		} else if (is_sector(XY3, " * ")) {
-			printf( "STAR AT %d , %d ABSORBED TORPEDO ENERGY.\n", XY3.X, XY3.Y);
+			printf("STAR AT %d , %d ABSORBED TORPEDO ENERGY.\n", XY3.X, XY3.Y);
 
 			if ((ret = klingons_shooting()) != RG_PASS)
 				return ret;
 			return RG_MAIN_LOOP;
 		} else if (is_sector(XY3, ">!<")) {
-			printf( "*** STARBASE DESTROYED ***\n");
+			puts("*** STARBASE DESTROYED ***");
 			B3--; B9--;
 
 			if (B9 <= 0 && K9 <= T - T0 - T9)
 				return RG_GAME_END_TORPEDOED_STARBASE;
 
-			printf( "STARFLEET COMMAND REVIEWING YOUR RECORD TO CONSIDER\n"
-			        "COURT MARTIAL!\n");
+			puts("STARFLEET COMMAND REVIEWING YOUR RECORD TO CONSIDER\n"
+			     "COURT MARTIAL!");
 			D0 = false;
 		} else {
 			// if you blew up something that isn't a klingon, star, or starbase, you get to fire again?
@@ -1159,30 +1159,30 @@ INLINE void shield_control()
 	double X; // desired shield strength
 
 	if (D[DEVICE_SHIELD_CONTROL] < 0) {
-		printf( "SHIELD CONTROL INOPERABLE\n");
+		puts("SHIELD CONTROL INOPERABLE");
 		return;
 	}
 
-	printf( "ENERGY AVAILABLE = %g "
+	printf("ENERGY AVAILABLE = %g "
 	        "NUMBER OF UNITS TO SHIELDS? ", E + S);
 	b_INPUT_1(&X);
 
 	if (X < 0 || S == X) {
-		printf( "<SHIELDS UNCHANGED>\n");
+		puts("<SHIELDS UNCHANGED>");
 		return;
 	}
 
 	if (X > E + S) {
-		printf( "SHIELD CONTROL REPORTS  'THIS IS NOT THE FEDERATION TREASURY.'\n"
-		        "<SHIELDS UNCHANGED>\n");
+		puts("SHIELD CONTROL REPORTS  'THIS IS NOT THE FEDERATION TREASURY.'\n"
+		     "<SHIELDS UNCHANGED>");
 		return;
 	}
 
 	E += S - X;
 	S = X;
 
-	printf( "DEFLECTOR CONTROL ROOM REPORT:\n"
-	        "  'SHIELDS NOW AT %d UNITS PER YOUR COMMAND.'\n", (int)(S));
+	printf("DEFLECTOR CONTROL ROOM REPORT:\n"
+	       "  'SHIELDS NOW AT %d UNITS PER YOUR COMMAND.'\n", (int)(S));
 }
 
 
@@ -1207,9 +1207,9 @@ rg_t starbase_repair()
 	if (D3 >= 1)
 		D3 = 0.9;
 
-	printf( "TECHNICIANS STANDING BY TO EFFECT REPAIRS TO YOUR SHIP;\n"
-	        "ESTIMATED TIME TO REPAIR: %g STARDATES\n"
-	        "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)? ", 0.01 * (int)(100 * D3));
+	printf("TECHNICIANS STANDING BY TO EFFECT REPAIRS TO YOUR SHIP;\n"
+	       "ESTIMATED TIME TO REPAIR: %g STARDATES\n"
+	       "WILL YOU AUTHORIZE THE REPAIR ORDER (Y/N)? ", 0.01 * (int)(100 * D3));
 	b_INPUT_S(s_A, 2);
 
 	if (my_strnicmp(s_A, "Y", 1) != 0)
@@ -1228,8 +1228,8 @@ void damage_report()
 {
 	int R1; // device number
 
-	printf( "\n"
-	        "DEVICE             STATE OF REPAIR\n");
+	puts("\n"
+	     "DEVICE             STATE OF REPAIR");
 
 	for (R1 = 1; R1 <= 8; R1++) {
 		const char *s_G2 = get_device_name(R1);
@@ -1245,7 +1245,7 @@ INLINE void damage_control()
 	rg_t ret;
 
 	if (D[DEVICE_DAMAGE_CONTROL] < 0) {
-		printf( "DAMAGE CONTROL REPORT NOT AVAILABLE\n");
+		puts("DAMAGE CONTROL REPORT NOT AVAILABLE");
 
 		if (!D0)
 			return;
@@ -1275,7 +1275,7 @@ rg_t klingons_shooting()
 		return RG_PASS;
 
 	if (D0) {
-		printf( "STARBASE SHIELDS PROTECT THE ENTERPRISE\n");
+		puts("STARBASE SHIELDS PROTECT THE ENTERPRISE");
 		return RG_PASS;
 	}
 
@@ -1317,18 +1317,18 @@ INLINE void end_of_game(rg_t end_type)
 	switch (end_type)
 	{
 		case RG_GAME_END_NO_ENERGY:
-			printf( "\n"
-			        "** FATAL ERROR **   YOU'VE JUST STRANDED YOUR SHIP IN\n"
-			        "SPACE\n"
-			        "YOU HAVE INSUFFICIENT MANEUVERING ENERGY,"
-			        " AND SHIELD CONTROL\n"
-			        "IS PRESENTLY INCAPABLE OF CROSS"
-			        "-CIRCUITING TO ENGINE ROOM!!\n");
+			puts("\n"
+			     "** FATAL ERROR **   YOU'VE JUST STRANDED YOUR SHIP IN\n"
+			     "SPACE\n"
+			     "YOU HAVE INSUFFICIENT MANEUVERING ENERGY,"
+			     " AND SHIELD CONTROL\n"
+			     "IS PRESENTLY INCAPABLE OF CROSS"
+			     "-CIRCUITING TO ENGINE ROOM!!");
 			break;
 
 		case RG_GAME_END_TORPEDOED_STARBASE:
-			printf( "THAT DOES IT, CAPTAIN!!  YOU ARE HEREBY RELIEVED OF COMMAND\n"
-			        "AND SENTENCED TO 99 STARDATES AT HARD LABOR ON CYGNUS 12!!\n");
+			puts("THAT DOES IT, CAPTAIN!!  YOU ARE HEREBY RELIEVED OF COMMAND\n"
+			     "AND SENTENCED TO 99 STARDATES AT HARD LABOR ON CYGNUS 12!!");
 
 		default:
 			break;
@@ -1337,23 +1337,23 @@ INLINE void end_of_game(rg_t end_type)
 	switch(end_type)
 	{
 		case RG_GAME_END_NO_KLINGONS:
-			printf( "CONGRULATION, CAPTAIN!  THEN LAST KLINGON BATTLE CRUISER\n"
+			printf("CONGRULATION, CAPTAIN!  THEN LAST KLINGON BATTLE CRUISER\n"
 			        "MENACING THE FDERATION HAS BEEN DESTROYED.\n\n"
 			        "YOUR EFFICIENCY RATING IS %g\n", 1000 * (K7 / (T - T0)) * (K7 / (T - T0)));
 			break;
 
 		case RG_GAME_END_ENTERPRISE_DESTROYED:
-			printf( "\n"
-			        "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION "
-			        "WILL BE CONQUERED\n");
+			puts("\n"
+			     "THE ENTERPRISE HAS BEEN DESTROYED.  THEN FEDERATION "
+			     "WILL BE CONQUERED");
 
 		case RG_GAME_END_TIME:
 		case RG_GAME_END_NO_ENERGY:
-			printf( "IT IS STARDATE %g\n", T);
+			printf("IT IS STARDATE %g\n", T);
 
 		case RG_GAME_END_RESIGN:
 		case RG_GAME_END_TORPEDOED_STARBASE:
-			printf( "THERE WERE %d KLINGON BATTLE CRUISERS LEFT AT\n"
+			printf("THERE WERE %d KLINGON BATTLE CRUISERS LEFT AT\n"
 			        "THE END OF YOUR MISSION.\n", K9);
 
 		default:
@@ -1364,7 +1364,7 @@ INLINE void end_of_game(rg_t end_type)
 
 	if (B9 > 0) {
 		char s_A[4];
-		printf( "THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER\n"
+		printf("THE FEDERATION IS IN NEED OF A NEW STARSHIP COMMANDER\n"
 		        "FOR A SIMILAR MISSION -- IF THERE IS A VOLUNTEER,\n"
 		        "LET HIM STEP FORWARD AND ENTER 'AYE'? ");
 		b_INPUT_S(s_A, 4);
@@ -1406,7 +1406,7 @@ void short_range_sensors_dock()
 		s_C = "DOCKED";
 		E = E0;
 		P = P0;
-		printf( "SHIELDS DROPPED FOR DOCKING PURPOSES\n");
+		puts("SHIELDS DROPPED FOR DOCKING PURPOSES");
 		S = 0;
 	} else if (K3 > 0) {
 		s_C = "*RED*";
@@ -1418,12 +1418,12 @@ void short_range_sensors_dock()
 	}
 
 	if (D[DEVICE_SHORT_RANGE_SENSORS] < 0) {
-		printf( "\n*** SHORT RANGE SENSORS ARE OUT ***\n\n");
+		puts("\n*** SHORT RANGE SENSORS ARE OUT ***\n");
 		return;
 	}
 
 	s_O1 = "---------------------------------";
-	printf("%s\n", s_O1);
+	puts(s_O1);
 
 	p = s_Q;
 	for (I = 0; I < 8; I++) {
@@ -1443,7 +1443,7 @@ void short_range_sensors_dock()
 		switch(I)
 		{
 			case 0:  printf("%g\n", (int)(T * 10) * 0.1); break;
-			case 1:  printf("%s\n", s_C); break;
+			case 1:  puts(s_C); break;
 			case 2:  printf("%d , %d\n", Q_12.X, Q_12.Y); break;
 			case 3:  printf("%d , %d\n", S_12.X, S_12.Y); break;
 			case 4:  printf("%d\n", P); break;
@@ -1452,7 +1452,7 @@ void short_range_sensors_dock()
 			default: printf("%d\n", K9);
 		}
 	}
-	printf("%s\n", s_O1);
+	puts(s_O1);
 }
 
 
@@ -1460,7 +1460,7 @@ void short_range_sensors_dock()
 INLINE void library_computer()
 {
 	if (D[DEVICE_LIBRARY_COMPUTER] < 0) {
-		printf( "COMPUTER DISABLED\n");
+		puts("COMPUTER DISABLED");
 		return;
 	}
 
@@ -1468,7 +1468,7 @@ INLINE void library_computer()
 	{
 		double A; // library-computer function input
 
-		printf( "COMPUTER ACTIVE AND AWAITING COMMAND? ");
+		printf("COMPUTER ACTIVE AND AWAITING COMMAND? ");
 		b_INPUT_1(&A);
 
 		if (A < 0)
@@ -1483,13 +1483,13 @@ INLINE void library_computer()
 			case 4: dir_calc_input(); break;
 			case 5: galaxy_map(GALAXY_MAP_NAMES); break;
 			default:
-				printf( "FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n"
-					"   0 = CUMULATIVE GALACTIC RECORD\n"
-					"   1 = STATUS REPORT\n"
-					"   2 = PHOTON TORPEDO DATA\n"
-					"   3 = STARBASE NAV DATA\n"
-					"   4 = DIRECTION/DISTANCE CALCULATOR\n"
-					"   5 = GALAXY 'REGION NAME' MAP\n\n");
+				puts("FUNCTIONS AVAILABLE FROM LIBRARY-COMPUTER:\n"
+				     "   0 = CUMULATIVE GALACTIC RECORD\n"
+				     "   1 = STATUS REPORT\n"
+				     "   2 = PHOTON TORPEDO DATA\n"
+				     "   3 = STARBASE NAV DATA\n"
+				     "   4 = DIRECTION/DISTANCE CALCULATOR\n"
+				     "   5 = GALAXY 'REGION NAME' MAP\n");
 				continue;
 		}
 		break;
@@ -1506,28 +1506,28 @@ INLINE void galaxy_map(gm_t map_type)
 	if (map_type != GALAXY_MAP_RECORD)
 	{
 		// SETUP TO CHANGE CUM GAL RECORD TO GALAXY MAP
-		printf( "%sTHE GALAXY\n", b_SPC(24));
+		printf("%sTHE GALAXY\n", b_SPC(24));
 	} else {
 		// CUM GALACTIC RECORD
 		// INPUT"DO YOU WANT A HARDCOPY? IS THE TTY ON (Y/N)";A$
 		// IFA$="Y"THENPOKE1229,2:POKE1237,3:NULL1
-		printf( "\n"
+		printf("\n"
 		        "        "
 		        "COMPUTER RECORD OF GALAXY FOR QUADRANT %d , %d\n"
 		        "\n", Q_12.X, Q_12.Y);
 	}
 
-	printf( "       1     2     3     4     5     6     7     8\n");
+	puts("       1     2     3     4     5     6     7     8");
 	s_O1 = "     ----- ----- ----- ----- ----- ----- ----- -----";
-	printf("%s\n", s_O1);
+	puts(s_O1);
 	for (I = 1; I <= 8; I++) {
-		printf( " %d ", I);
+		printf(" %d ", I);
 		if (map_type == GALAXY_MAP_RECORD) {
 			for (J = 1; J <= 8; J++) {
-				printf( "   ");
+				printf("   ");
 
 				if (Z[I][J] == 0) {
-					printf( "***");
+					printf("***");
 					continue;
 				}
 
@@ -1544,7 +1544,7 @@ INLINE void galaxy_map(gm_t map_type)
 
 			printf("%s%s%s%s", b_SPC(J0), s_G2_0, b_SPC(J1), s_G2_1);
 		}
-		printf( "\n%s\n", s_O1);
+		printf("\n%s\n", s_O1);
 	}
 	linefeeds(1);
 }
@@ -1555,22 +1555,22 @@ INLINE void status_report()
 {
 	const char *s_X; // plural
 
-	printf( "   STATUS REPORT:\n");
+	puts("   STATUS REPORT:");
 
 	s_X = (K9 > 1) ? "S" : "";
-	printf( "KLINGON%s LEFT:  %d\n"
-	        "MISSION MUST BE COMPLETED IN %g STARDATES\n",
+	printf("KLINGON%s LEFT:  %d\n"
+	       "MISSION MUST BE COMPLETED IN %g STARDATES\n",
 		s_X, K9, 0.1 * (int)((T0 + T9 - T) * 10));
 
 	if (B9 < 1) {
-		printf( "YOUR STUPIDITY HAS LEFT YOU ON YOUR ON IN\n"
-		        "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!\n");
+		puts("YOUR STUPIDITY HAS LEFT YOU ON YOUR ON IN\n"
+		     "  THE GALAXY -- YOU HAVE NO STARBASES LEFT!");
 		damage_control();
 		return;
 	}
 
 	s_X = (B9 > 1) ? "S" : "";
-	printf( "THE FEDERATION IS MAINTAINING %d STARBASE%s IN THE GALAXY\n", B9, s_X);
+	printf("THE FEDERATION IS MAINTAINING %d STARBASE%s IN THE GALAXY\n", B9, s_X);
 	damage_control();
 }
 
@@ -1584,8 +1584,8 @@ void actual_dir_calc(double C1, double A, double W1, double X)
 	W1 /= fabs(X) > fabs(A) ? fabs(X) : fabs(A);
 	C1 += ((X > 0) == (A > 0)) ? W1 : -W1;
 
-	printf( "DIRECTION = %g\n"
-	        "DISTANCE = %g\n", C1, sqrt(X * X + A * A));
+	printf("DIRECTION = %g\n"
+	       "DISTANCE = %g\n", C1, sqrt(X * X + A * A));
 }
 
 
@@ -1601,7 +1601,7 @@ INLINE void dir_calc_klingons()
 	}
 
 	s_X = (K3 > 1) ? "S" : "";
-	printf( "FROM ENTERPRISE TO KLINGON BATTLE CRUSER%s\n", s_X);
+	printf("FROM ENTERPRISE TO KLINGON BATTLE CRUSER%s\n", s_X);
 
 	for (I = 1; I <= 3; I++) {
 		if (K.E[I] <= 0)
@@ -1614,12 +1614,12 @@ INLINE void dir_calc_klingons()
 INLINE void dir_calc_starbase()
 {
 	if (B3 == 0) {
-		printf( "MR. SPOCK REPORTS,  'SENSORS SHOW NO STARBASES IN THIS"
-			" QUADRANT.'\n");
+		puts("MR. SPOCK REPORTS,  'SENSORS SHOW NO STARBASES IN THIS"
+		     " QUADRANT.'");
 		return;
 	}
 
-	printf( "FROM ENTERPRISE TO STARBASE:\n");
+	puts("FROM ENTERPRISE TO STARBASE:");
 	actual_dir_calc(S_12.X, S_12.Y, B_45.X, B_45.Y);
 }
 
@@ -1630,12 +1630,12 @@ INLINE void dir_calc_input()
 		W1, // final X coord
 		X;  // final Y coord
 
-	printf( "DIRECTION/DISTANCE CALCULATOR:\n"
-		"YOU ARE AT QUADRANT  %d , %d  SECTOR  %d , %d\n"
-		"PLEASE ENTER\n"
-		"  INITIAL COORDINATES (X,Y)? ", Q_12.X, Q_12.Y, S_12.X, S_12.Y);
+	printf("DIRECTION/DISTANCE CALCULATOR:\n"
+	       "YOU ARE AT QUADRANT  %d , %d  SECTOR  %d , %d\n"
+	       "PLEASE ENTER\n"
+	       "  INITIAL COORDINATES (X,Y)? ", Q_12.X, Q_12.Y, S_12.X, S_12.Y);
 	b_INPUT_2(&C1, &A);
-	printf( "  FINAL COORDINATES (X,Y)? ");
+	printf("  FINAL COORDINATES (X,Y)? ");
 	b_INPUT_2(&W1, &X);
 	actual_dir_calc(C1, A, W1, X);
 }
