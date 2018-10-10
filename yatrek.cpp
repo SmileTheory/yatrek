@@ -1,4 +1,5 @@
 #ifdef __cplusplus
+#include <cassert>
 #include <cstdio>
 #include <cmath>
 #include <ctime>
@@ -7,6 +8,7 @@
 #include <cstdint>
 #include <cstdlib>
 #else
+#include <assert.h>
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
@@ -233,6 +235,17 @@ typedef enum {
 	RG_GAME_END_NO_KLINGONS,
 } rg_t;
 
+enum {
+	DEVICE_WARP_ENGINES = 1,
+	DEVICE_SHORT_RANGE_SENSORS,
+	DEVICE_LONG_RANGE_SENSORS,
+	DEVICE_PHASER_CONTROL,
+	DEVICE_PHOTON_TUBES,
+	DEVICE_DAMAGE_CONTROL,
+	DEVICE_SHIELD_CONTROL,
+	DEVICE_LIBRARY_COMPUTER
+};
+
 INLINE void new_galaxy();
 void new_quadrant();
 INLINE void main_loop();
@@ -253,7 +266,7 @@ INLINE void status_report();
 INLINE void dir_calc_klingons();
 INLINE void dir_calc_starbase();
 INLINE void dir_calc_input();
-INLINE ivec2 get_empty_sector();
+INLINE ivec2 set_empty_sector(const char *s_A);
 INLINE void set_sector(ivec2 Z_12, const char *s_A);
 const char *get_device_name(int R1);
 INLINE bool is_sector(ivec2 Z_12, const char *s_A);
@@ -610,19 +623,16 @@ void new_quadrant()
 	set_sector(S_12, "<*>");
 
 	for (I = 1; I <= K3; I++) {
-		K.XY[I] = get_empty_sector();
-		set_sector(K.XY[I], "+K+");
+		K.XY[I] = set_empty_sector("+K+");
 		K.E[I] = S9 * (0.5 + b_RND(1));
 	}
 
 	if (B3 >= 1) {
-		B_45 = get_empty_sector();
-		set_sector(B_45, ">!<");
+		B_45 = set_empty_sector(">!<");
 	}
 
 	for (I = 1; I <= S3; I++) {
-		ivec2 R_12 = get_empty_sector();
-		set_sector(R_12, " * ");
+		set_empty_sector(" * ");
 	}
 }
 
@@ -634,7 +644,8 @@ INLINE void main_loop()
 		int I;
 		rg_t ret;
 
-		if (S + E <= 10 || (E <= 10 && D[7] != 0)) {
+		// BUG: game over triggered if shield control is overrepaired
+		if (S + E <= 10 || (E <= 10 && D[DEVICE_SHIELD_CONTROL] != 0)) {
 			end_of_game(RG_GAME_END_NO_ENERGY);
 			return;
 		}
@@ -712,11 +723,11 @@ INLINE rg_t course_control()
 		return RG_MAIN_LOOP;
 	}
 
-	s_X = (D[1] < 0) ? "0.2" : "8";
+	s_X = (D[DEVICE_WARP_ENGINES] < 0) ? "0.2" : "8";
 	printf( "WARP FACTOR (0-%s)? ", s_X);
 	b_INPUT_1(&W1);
 
-	if (D[1] < 0 && W1 > 0.2) {
+	if (D[DEVICE_WARP_ENGINES] < 0 && W1 > 0.2) {
 		printf( "WARP ENGINES ARE DAMAGED.  MAXIUM SPEED = WARP 0.2\n");
 		return RG_MAIN_LOOP;
 	}
@@ -734,7 +745,7 @@ INLINE rg_t course_control()
 		printf( "ENGINEERING REPORTS   'INSUFFICIENT ENERGY AVAILABLE\n"
 		        "                       FOR MANEUVERING AT WARP %g !'\n", W1);
 
-		if (S >= N - E && D[7] >= 0) {
+		if (S >= N - E && D[DEVICE_SHIELD_CONTROL] >= 0) {
 			printf( "DEFLECTOR CONTROL ROOM ACKNOWLEDGES %g UNITS OF ENERGY\n"
 			        "                         PRESENTLY DEPLOYED TO SHIELDS.\n", S);
 		}
@@ -748,8 +759,7 @@ INLINE rg_t course_control()
 			continue;
 
 		set_sector(K.XY[I], "   ");
-		K.XY[I] = get_empty_sector();
-		set_sector(K.XY[I], "+K+");
+		K.XY[I] = set_empty_sector("+K+");
 	}
 
 	if ((ret = klingons_shooting()) != RG_PASS)
@@ -935,7 +945,7 @@ INLINE void long_range_sensors()
 
 	const char *s_O1; // horizontal rule
 
-	if (D[3] < 0) {
+	if (D[DEVICE_LONG_RANGE_SENSORS] < 0) {
 		printf("LONG RANGE SENSORS ARE INOPERABLE\n");
 		return;
 	}
@@ -972,7 +982,7 @@ INLINE rg_t phaser_control()
 	    H1;   // phaser power divided by # of klingons in quadrant
 	double X; // energy to fire
 
-	if (D[4] < 0) {
+	if (D[DEVICE_PHASER_CONTROL] < 0) {
 		printf("PHASERS INOPERATIVE\n");
 		return RG_MAIN_LOOP;
 	}
@@ -982,7 +992,7 @@ INLINE rg_t phaser_control()
 		return RG_MAIN_LOOP;
 	}
 
-	if (D[8] < 0)
+	if (D[DEVICE_LIBRARY_COMPUTER] < 0)
 		printf("COMPUTER FAILURE HAMPERS ACCURACY\n");
 
 	printf("PHASERS LOCKED ON TARGET;  ");
@@ -997,7 +1007,9 @@ INLINE rg_t phaser_control()
 	} while (E - X < 0);
 
 	E -= X;
-	if (D[7] < 0)
+
+	// BUG: should check D[DEVICE_LIBRARY_COMPUTER]
+	if (D[DEVICE_SHIELD_CONTROL] < 0)
 		X *= b_RND(1);
 
 	H1 = X / K3;
@@ -1055,7 +1067,7 @@ INLINE rg_t photon_torpedo()
 		return RG_MAIN_LOOP;
 	}
 
-	if (D[5] < 0) {
+	if (D[DEVICE_PHOTON_TUBES] < 0) {
 		printf( "PHOTON TUBES ARE NOT OPERATIONAL\n");
 		return RG_MAIN_LOOP;
 	}
@@ -1146,7 +1158,7 @@ INLINE void shield_control()
 {
 	double X; // desired shield strength
 
-	if (D[7] < 0) {
+	if (D[DEVICE_SHIELD_CONTROL] < 0) {
 		printf( "SHIELD CONTROL INOPERABLE\n");
 		return;
 	}
@@ -1232,7 +1244,7 @@ INLINE void damage_control()
 {
 	rg_t ret;
 
-	if (D[6] < 0) {
+	if (D[DEVICE_DAMAGE_CONTROL] < 0) {
 		printf( "DAMAGE CONTROL REPORT NOT AVAILABLE\n");
 
 		if (!D0)
@@ -1405,7 +1417,7 @@ void short_range_sensors_dock()
 			s_C = "YELLOW";
 	}
 
-	if (D[2] < 0) {
+	if (D[DEVICE_SHORT_RANGE_SENSORS] < 0) {
 		printf( "\n*** SHORT RANGE SENSORS ARE OUT ***\n\n");
 		return;
 	}
@@ -1447,7 +1459,7 @@ void short_range_sensors_dock()
 // LIBRARY COMPUTER CODE
 INLINE void library_computer()
 {
-	if (D[8] < 0) {
+	if (D[DEVICE_LIBRARY_COMPUTER] < 0) {
 		printf( "COMPUTER DISABLED\n");
 		return;
 	}
@@ -1630,13 +1642,15 @@ INLINE void dir_calc_input()
 
 
 // FIND EMPTY PLACE IN QUADRANT (FOR THINGS)
-INLINE ivec2 get_empty_sector()
+INLINE ivec2 set_empty_sector(const char *s_A)
 {
 	ivec2 R_12;
 
 	do {
 		R_12.X = b_FNR(); R_12.Y = b_FNR();
 	} while (!is_sector(R_12, "   "));
+
+	set_sector(R_12, s_A);
 
 	return R_12;
 }
@@ -1647,10 +1661,7 @@ INLINE void set_sector(ivec2 Z_12, const char *s_A)
 {
 	int S8 = (Z_12.Y + Z_12.X * 8) * 3 - 27;
 
-	if (strlen(s_A) != 3) {
-		printf( "ERROR\n");
-		exit(0);
-	}
+	assert(strlen(s_A) == 3);
 
 	s_Q[S8] = s_A[0];
 	s_Q[S8 + 1] = s_A[1];
@@ -1690,9 +1701,9 @@ const char *get_quadrant_name(int Z4, int Z5)
 		"BETELGEUSE", "ALDEBARAN", "REGULUS", "ARCTURUS", "SPICA"
 	};
 
-	if (Z4 >= 1 && Z4 <= 8)
-		return quadrant_names[Z4 + ((Z5 <= 4) ? -1 : 7)];
-	return quadrant_names[8];
+	assert(Z4 >= 1 && Z4 <= 8);
+
+	return quadrant_names[Z4 + ((Z5 <= 4) ? -1 : 7)];
 }
 
 INLINE const char *get_quadrant_number(int Z5)
@@ -1701,7 +1712,7 @@ INLINE const char *get_quadrant_number(int Z5)
 		"I", "II", "III", "IV"
 	};
 
-	if (Z5 >= 1 && Z5 <= 8)
-		return quadrant_numbers[(Z5 - 1) % 4];
-	return "";
+	assert(Z5 >= 1 && Z5 <= 8);
+
+	return quadrant_numbers[(Z5 - 1) % 4];
 }
