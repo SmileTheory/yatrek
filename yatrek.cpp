@@ -21,6 +21,13 @@
 
 #define INLINE static inline
 
+// Define to enable bugs found in 1978 BASIC version.
+// Known bugs from that version:
+// Line 1990: Game over if shield control is overrepaired and energy is low
+// Line 2590: Some klingons won't move if killed in reverse order
+// Line 4410: Phaser power reduced if shield control damaged
+// #define ENABLE_1978_BUGS
+
 ////////////////////////////////////////////////////////////////////////////////
 // below from "A small noncryptographic PRNG"
 // http://burtleburtle.net/bob/rand/smallprng.html
@@ -566,7 +573,6 @@ INLINE void new_galaxy()
 	       "   ON STARDATE %g   THIS GIVES YOU %g DAYS.  THERE %s\n"
 	       "   %d STARBASE%s IN THE GALAXY FOR RESUPPLYING YOUR SHIP\n"
 	       "\nHIT ENTER WHEN READY TO ACCEPT COMMAND", K9, T0 + T9, T9, s_X0, B9, s_X);
-	I = b_RND(1);
 	b_INPUT_S(s_A, 3);
 }
 
@@ -574,6 +580,7 @@ INLINE void new_galaxy()
 // HERE ANY TIME NEW QUADRANT ENTERED
 void new_quadrant()
 {
+	const char *s_G2_1, *s_G2_2;
 	int I;
 
 	K3 = 0;
@@ -582,38 +589,36 @@ void new_quadrant()
 	D4 = 0.5 * b_RND(1);
 	Z[Q_12.X][Q_12.Y] = G[Q_12.X][Q_12.Y];
 
-	if (Q_12.X >= 1 && Q_12.X <= 8 && Q_12.Y >= 1 && Q_12.Y <= 8) {
-		const char *s_G2_1 = get_quadrant_name(Q_12.X, Q_12.Y);
-		const char *s_G2_2 = get_quadrant_number(Q_12.Y);
+	assert(Q_12.X >= 1 && Q_12.X <= 8 && Q_12.Y >= 1 && Q_12.Y <= 8);
 
-		linefeeds(1);
-		if (T0 == T) {
-			printf("YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n"
-			       "IN THE GALACTIC QUADRANT, '%s %s'.\n", s_G2_1, s_G2_2);
-		} else {
-			printf("NOW ENTERING %s %s QUADRANT . . .\n", s_G2_1, s_G2_2);
-		}
-		linefeeds(1);
+	s_G2_1 = get_quadrant_name(Q_12.X, Q_12.Y);
+	s_G2_2 = get_quadrant_number(Q_12.Y);
 
-		K3 = G[Q_12.X][Q_12.Y] / 100;
-		B3 = G[Q_12.X][Q_12.Y] / 10 % 10;
-		S3 = G[Q_12.X][Q_12.Y] % 10;
+	linefeeds(1);
+	if (T0 == T) {
+		printf("YOUR MISSION BEGINS WITH YOUR STARSHIP LOCATED\n"
+			"IN THE GALACTIC QUADRANT, '%s %s'.\n", s_G2_1, s_G2_2);
+	} else {
+		printf("NOW ENTERING %s %s QUADRANT . . .\n", s_G2_1, s_G2_2);
+	}
+	linefeeds(1);
 
-		if (K3 != 0) {
-			puts("COMBAT AREA      CONDITION RED");
+	K3 = G[Q_12.X][Q_12.Y] / 100;
+	B3 = G[Q_12.X][Q_12.Y] / 10 % 10;
+	S3 = G[Q_12.X][Q_12.Y] % 10;
 
-			if (S <= 200)
-				puts("   SHIELDS DANGEROUSLY LOW");
-		}
+	if (K3 != 0) {
+		puts("COMBAT AREA      CONDITION RED");
 
-		for (I = 1; I <= 3; I++) {
-			VEC2_SET(K.XY[I], 0, 0);
-		}
+		if (S <= 200)
+			puts("   SHIELDS DANGEROUSLY LOW");
 	}
 
-	for (I = 1; I <= 3; I++) {
+	for (I = 1; I <= 3; I++)
+		VEC2_SET(K.XY[I], 0, 0);
+
+	for (I = 1; I <= 3; I++)
 		K.E[I] = 0;
-	}
 
 	for (I = 0; I < 192; I++)
 		s_Q[I] = ' ';
@@ -627,13 +632,11 @@ void new_quadrant()
 		K.E[I] = S9 * (0.5 + b_RND(1));
 	}
 
-	if (B3 >= 1) {
+	if (B3 >= 1)
 		B_45 = set_empty_sector(">!<");
-	}
 
-	for (I = 1; I <= S3; I++) {
+	for (I = 1; I <= S3; I++)
 		set_empty_sector(" * ");
-	}
 }
 
 
@@ -644,8 +647,13 @@ INLINE void main_loop()
 		int I;
 		rg_t ret;
 
-		// BUG: game over triggered if shield control is overrepaired
+		// Bug from 1978 BASIC version:
+		// Line 1990: Game over if shield control is overrepaired and energy is low
+#ifdef ENABLE_1978_BUGS
 		if (S + E <= 10 || (E <= 10 && D[DEVICE_SHIELD_CONTROL] != 0)) {
+#else
+		if (S + E <= 10 || (E <= 10 && D[DEVICE_SHIELD_CONTROL] < 0)) {
+#endif
 			end_of_game(RG_GAME_END_NO_ENERGY);
 			return;
 		}
@@ -754,7 +762,13 @@ INLINE rg_t course_control()
 	}
 
 	// KLINGONS MOVE/FIRE ON MOVING STARSHIP . . .
+	// Bug from 1978 BASIC version:
+	// Line 2590: Some klingons won't move if killed in reverse order
+#ifdef ENABLE_1978_BUGS
 	for (I = 1; I <= K3; I++) {
+#else
+	for (I = 1; I <= 3; I++) {
+#endif
 		if (K.E[I] == 0)
 			continue;
 
@@ -1008,8 +1022,13 @@ INLINE rg_t phaser_control()
 
 	E -= X;
 
-	// BUG: should check D[DEVICE_LIBRARY_COMPUTER]
+	// Bug from 1978 BASIC version:
+	// Line 4410: Phaser power reduced if shield control damaged
+#ifdef ENABLE_1978_BUGS
 	if (D[DEVICE_SHIELD_CONTROL] < 0)
+#else
+	if (D[DEVICE_LIBRARY_COMPUTER] < 0)
+#endif
 		X *= b_RND(1);
 
 	H1 = X / K3;
