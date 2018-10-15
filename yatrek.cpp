@@ -600,10 +600,10 @@ void new_quadrant()
 		S3 = G[Q_12.X][Q_12.Y] % 10;
 
 		if (K3 != 0) {
-			printf("COMBAT AREA      CONDITION RED\n");
+			puts("COMBAT AREA      CONDITION RED");
 
 			if (S <= 200)
-				printf("   SHIELDS DANGEROUSLY LOW\n");
+				puts("   SHIELDS DANGEROUSLY LOW");
 		}
 
 		for (I = 1; I <= 3; I++) {
@@ -967,10 +967,10 @@ INLINE void long_range_sensors()
 	}
 }
 
-void no_enemy_ships()
+INLINE void no_enemy_ships()
 {
-	printf("SCIENCE OFFICER SPOCK REPORTS  'SENSORS SHOW NO ENEMY SHIPS\n"
-	       "                                IN THIS QUADRANT'\n");
+	puts("SCIENCE OFFICER SPOCK REPORTS  'SENSORS SHOW NO ENEMY SHIPS\n"
+	     "                                IN THIS QUADRANT'");
 }
 
 
